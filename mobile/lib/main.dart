@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart'; // Import fl_chart
 import 'dart:math'; // Import for max function
+import 'package:intl/intl.dart'; // Import intl package
 
 // --- Dummy Data (Converted from JS) ---
 
@@ -45,6 +46,48 @@ const List<Map<String, dynamic>> dummyLogs = [
       "steps": "3800", // Removed comma
       "activeCalories": "150",
       "restingHR": "74 bpm"
+    }
+  },
+  {
+    "date": "Sunday, March 30, 2025",
+    "mood": "5/5 (Excellent)",
+    "energy": "5/5 (High)",
+    "symptoms": "None",
+    "notes": "Relaxing day off. Went for a long hike.",
+    "tags": ["#relax", "#exercise"],
+    "healthData": {
+      "sleep": "8.0 hours",
+      "steps": "15300",
+      "activeCalories": "550",
+      "restingHR": "65 bpm"
+    }
+  },
+  {
+    "date": "Tuesday, April 1, 2025",
+    "mood": "3/5 (Average)",
+    "energy": "3/5 (Average)",
+    "symptoms": "Slight allergy symptoms",
+    "notes": "Spring allergies starting up. Otherwise okay.",
+    "tags": ["#allergies"],
+    "healthData": {
+      "sleep": "7.5 hours",
+      "steps": "6800",
+      "activeCalories": "250",
+      "restingHR": "70 bpm"
+    }
+  },
+  {
+    "date": "Thursday, April 3, 2025",
+    "mood": "4/5 (Good)",
+    "energy": "3/5 (Average)",
+    "symptoms": "None",
+    "notes": "Felt a bit tired but got work done. Evening walk helped.",
+    "tags": ["#productive"],
+    "healthData": {
+      "sleep": "6.8 hours",
+      "steps": "7200",
+      "activeCalories": "280",
+      "restingHR": "69 bpm"
     }
   }
 ];
@@ -206,10 +249,569 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const MyHomePage(),
+      home: const LoginPage(), // Start with LoginPage
     );
   }
 }
+
+// --- Authentication Pages ---
+
+class LoginPage extends StatefulWidget {
+ const LoginPage({super.key});
+
+ @override
+ State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+ final _formKey = GlobalKey<FormState>();
+ final _emailController = TextEditingController();
+ final _passwordController = TextEditingController();
+ bool _isLoading = false;
+
+ @override
+ void dispose() {
+   _emailController.dispose();
+   _passwordController.dispose();
+   super.dispose();
+ }
+
+ void _login() {
+   if (_formKey.currentState!.validate()) {
+     setState(() { _isLoading = true; }); // Show loading indicator
+
+     // Simulate network delay
+     Future.delayed(const Duration(milliseconds: 500), () {
+       final email = _emailController.text.trim();
+       final password = _passwordController.text.trim();
+
+       if (email == 'test@healthsync.tech' && password == '123456') {
+         Navigator.pushReplacement(
+           context,
+           MaterialPageRoute(builder: (context) => const MyHomePage()),
+         );
+       } else {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(
+             content: Text('Invalid email or password.'),
+             backgroundColor: Colors.red,
+           ),
+         );
+          setState(() { _isLoading = false; }); // Hide loading indicator on error
+       }
+       // No need to set isLoading to false on success as the page is replaced
+     });
+   }
+ }
+
+ @override
+ Widget build(BuildContext context) {
+   return Scaffold(
+     appBar: AppBar(title: const Text('Login')),
+     body: Center(
+       child: SingleChildScrollView( // Prevent overflow on small screens
+         padding: const EdgeInsets.all(24.0),
+         child: Form(
+           key: _formKey,
+           child: Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+               Text('Welcome Back!', style: Theme.of(context).textTheme.headlineSmall),
+               const SizedBox(height: 32),
+               TextFormField(
+                 controller: _emailController,
+                 decoration: const InputDecoration(labelText: 'Email'),
+                 keyboardType: TextInputType.emailAddress,
+                 validator: (value) {
+                   if (value == null || value.isEmpty || !value.contains('@')) {
+                     return 'Please enter a valid email';
+                   }
+                   return null;
+                 },
+               ),
+               const SizedBox(height: 16),
+               TextFormField(
+                 controller: _passwordController,
+                 decoration: const InputDecoration(labelText: 'Password'),
+                 obscureText: true,
+                 validator: (value) {
+                   if (value == null || value.isEmpty) {
+                     return 'Please enter your password';
+                   }
+                   return null;
+                 },
+               ),
+               const SizedBox(height: 32),
+               _isLoading
+                   ? const CircularProgressIndicator()
+                   : ElevatedButton(
+                       onPressed: _login,
+                       child: const Text('Login'),
+                     ),
+               const SizedBox(height: 16),
+               TextButton(
+                 onPressed: _isLoading ? null : () { // Disable button while loading
+                   Navigator.push(
+                     context,
+                     MaterialPageRoute(builder: (context) => const RegisterPage()),
+                   );
+                 },
+                 child: const Text('Don\'t have an account? Register'),
+               ),
+             ],
+           ),
+         ),
+       ),
+     ),
+   );
+ }
+}
+
+class RegisterPage extends StatefulWidget {
+ const RegisterPage({super.key});
+
+ @override
+ State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+ final _formKey = GlobalKey<FormState>();
+ final _nameController = TextEditingController();
+ final _emailController = TextEditingController();
+ final _passwordController = TextEditingController();
+ bool _isLoading = false;
+
+  @override
+ void dispose() {
+   _nameController.dispose();
+   _emailController.dispose();
+   _passwordController.dispose();
+   super.dispose();
+ }
+
+ void _register() {
+    if (_formKey.currentState!.validate()) {
+      setState(() { _isLoading = true; });
+
+      // Simulate network delay & registration
+      Future.delayed(const Duration(milliseconds: 500), () {
+         // In a real app, you'd send data to a backend here
+         print('Registering user: ${_nameController.text}, ${_emailController.text}');
+
+         // Navigate to main app screen after "registration"
+         Navigator.pushReplacement(
+           context,
+           MaterialPageRoute(builder: (context) => const MyHomePage()),
+         );
+         // No need to set isLoading to false as the page is replaced
+      });
+    }
+ }
+
+ @override
+ Widget build(BuildContext context) {
+   return Scaffold(
+     appBar: AppBar(title: const Text('Register')),
+     body: Center(
+       child: SingleChildScrollView( // Prevent overflow
+         padding: const EdgeInsets.all(24.0),
+         child: Form(
+           key: _formKey,
+           child: Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+                Text('Create Account', style: Theme.of(context).textTheme.headlineSmall),
+                const SizedBox(height: 32),
+                TextFormField(
+                 controller: _nameController,
+                 decoration: const InputDecoration(labelText: 'Name'),
+                 keyboardType: TextInputType.name,
+                 validator: (value) {
+                   if (value == null || value.isEmpty) {
+                     return 'Please enter your name';
+                   }
+                   return null;
+                 },
+               ),
+               const SizedBox(height: 16),
+               TextFormField(
+                 controller: _emailController,
+                 decoration: const InputDecoration(labelText: 'Email'),
+                 keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                   if (value == null || value.isEmpty || !value.contains('@')) {
+                     return 'Please enter a valid email';
+                   }
+                   return null;
+                 },
+               ),
+               const SizedBox(height: 16),
+               TextFormField(
+                 controller: _passwordController,
+                 decoration: const InputDecoration(labelText: 'Password'),
+                 obscureText: true,
+                  validator: (value) {
+                   if (value == null || value.isEmpty || value.length < 6) {
+                     return 'Password must be at least 6 characters';
+                   }
+                   return null;
+                 },
+               ),
+               const SizedBox(height: 32),
+               _isLoading
+                   ? const CircularProgressIndicator()
+                   : ElevatedButton(
+                       onPressed: _register,
+                       child: const Text('Register'),
+                     ),
+               const SizedBox(height: 16),
+               TextButton(
+                 onPressed: _isLoading ? null : () {
+                   Navigator.pop(context); // Go back to Login
+                 },
+                 child: const Text('Already have an account? Login'),
+               ),
+             ],
+           ),
+         ),
+       ),
+     ),
+   );
+ }
+}
+
+// --- Summary Page Implementation ---
+class SummaryPage extends StatelessWidget {
+  const SummaryPage({super.key});
+
+  // --- Data Parsing Helpers (Similar to WeeklyNarrativeView) ---
+  double _parseHealthData(String value) {
+    // Handle mood/energy ratings like "3/5 (Average)"
+    if (value.contains('/')) {
+      final parts = value.split('/');
+      return double.tryParse(parts[0]) ?? 0.0;
+    }
+    // Handle other numeric values like "5.5 hours" or "4200"
+    final numericString = value.replaceAll(RegExp(r'[^0-9.]'), '');
+    return double.tryParse(numericString) ?? 0.0;
+  }
+
+  // Prepare data for a specific metric
+  List<FlSpot> _getSpotsForMetric(String metricKey) {
+    List<FlSpot> spots = [];
+    final DateFormat format = DateFormat("EEEE, MMMM d, yyyy");
+    // Sort logs by date first to ensure correct order for line chart
+    List<Map<String, dynamic>> sortedLogs = List.from(dummyLogs);
+    sortedLogs.sort((a, b) {
+       try {
+         return format.parse(a['date']).compareTo(format.parse(b['date']));
+       } catch (e) { return 0; }
+    });
+
+    for (int i = 0; i < sortedLogs.length; i++) {
+      final log = sortedLogs[i];
+      double yValue;
+      if (metricKey == 'mood' || metricKey == 'energy') {
+        yValue = _parseHealthData(log[metricKey]);
+      } else if (log['healthData'] != null && log['healthData'][metricKey] != null) { // Check if healthData and the key exist
+        yValue = _parseHealthData(log['healthData'][metricKey]);
+      } else {
+        yValue = 0.0; // Default value if data is missing
+      }
+      spots.add(FlSpot(i.toDouble(), yValue)); // Use index as X value
+    }
+    return spots;
+  }
+
+   // Get bottom titles (dates) - simplified for summary
+  Widget _bottomTitleWidgets(double value, TitleMeta meta, int totalLogs) {
+    const style = TextStyle(
+      color: Colors.grey,
+      fontWeight: FontWeight.bold,
+      fontSize: 10,
+    );
+    String text = '';
+    // Show roughly 3-4 date labels
+    int interval = (totalLogs / 3).ceil().clamp(1, totalLogs); // Ensure interval is at least 1
+    if (value.toInt() % interval == 0 && value.toInt() < totalLogs) {
+       try {
+         // Sort logs again to get the correct date for the index
+         List<Map<String, dynamic>> sortedLogs = List.from(dummyLogs);
+         final DateFormat format = DateFormat("EEEE, MMMM d, yyyy");
+         sortedLogs.sort((a, b) => format.parse(a['date']).compareTo(format.parse(b['date'])));
+         // Ensure index is within bounds
+         if (value.toInt() >= 0 && value.toInt() < sortedLogs.length) {
+            DateTime date = format.parse(sortedLogs[value.toInt()]['date']);
+            text = DateFormat.Md().format(date); // Format as "Month/Day"
+         }
+       } catch (e) { text = ''; print("Error formatting date label: $e"); }
+    }
+
+   // Pass meta to SideTitleWidget, remove axisSide
+   return SideTitleWidget(
+     meta: meta,
+     space: 4,
+     child: Text(text, style: style),
+    );
+  }
+
+  // Get left titles (values)
+  Widget _leftTitleWidgets(double value, TitleMeta meta) {
+    const style = TextStyle(
+      color: Colors.grey,
+      fontWeight: FontWeight.bold,
+      fontSize: 10,
+    );
+    // Show integer values for Y-axis, ensure interval is reasonable
+    double interval = ((meta.max - meta.min) / 4).clamp(1.0, double.infinity);
+    // Show min, max, and roughly 2-3 intermediate values
+    if (value == meta.min || value == meta.max || (value > meta.min && value < meta.max && ((value - meta.min) % interval < 1 || (meta.max - value) % interval < 1))) {
+       // Avoid clutter if max is small or values are too close
+      if (meta.max <= 5 && value != meta.min && value != meta.max) {
+          // Only show midpoint if scale is small
+          if ((value - (meta.min + meta.max) / 2).abs() > 0.1) return Container();
+      }
+      // Pass meta to SideTitleWidget, remove axisSide
+      return SideTitleWidget(
+        meta: meta,
+        space: 4,
+        child: Text(value.toInt().toString(), style: style), // Use toInt() for cleaner labels
+      );
+    }
+    return Container();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final moodSpots = _getSpotsForMetric('mood');
+    final energySpots = _getSpotsForMetric('energy');
+    final sleepSpots = _getSpotsForMetric('sleep');
+    final stepsSpots = _getSpotsForMetric('steps');
+    final totalLogs = dummyLogs.length; // For bottom title calculation
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Health Summary Trends", style: textTheme.headlineSmall),
+          const SizedBox(height: 24),
+
+          _buildChartCard(
+            context: context,
+            title: "Mood (1-5)",
+            spots: moodSpots,
+            color: Colors.blue,
+            minY: 1, maxY: 5, // Mood scale
+            totalLogs: totalLogs,
+          ),
+          const SizedBox(height: 16),
+           _buildChartCard(
+            context: context,
+            title: "Energy (1-5)",
+            spots: energySpots,
+            color: Colors.orange,
+            minY: 1, maxY: 5, // Energy scale
+            totalLogs: totalLogs,
+          ),
+          const SizedBox(height: 16),
+          _buildChartCard(
+            context: context,
+            title: "Sleep (Hours)",
+            spots: sleepSpots,
+            color: Colors.indigo,
+            minY: 0, // Sleep can be 0
+            totalLogs: totalLogs,
+          ),
+          const SizedBox(height: 16),
+          _buildChartCard(
+            context: context,
+            title: "Steps",
+            spots: stepsSpots,
+            color: Colors.green,
+            minY: 0, // Steps start at 0
+            totalLogs: totalLogs,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper to build individual chart cards
+  Widget _buildChartCard({
+    required BuildContext context,
+    required String title,
+    required List<FlSpot> spots,
+    required Color color,
+    required int totalLogs,
+    double? minY, // Optional min/max Y
+    double? maxY,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
+    // Calculate minY/maxY if not provided, ensuring minY is not greater than maxY
+    final calculatedMinY = minY ?? (spots.isEmpty ? 0 : spots.map((s) => s.y).reduce(min) * 0.8);
+    final calculatedMaxY = maxY ?? (spots.isEmpty ? 10 : spots.map((s) => s.y).reduce(max) * 1.2);
+    final finalMinY = calculatedMinY > calculatedMaxY ? calculatedMaxY - 1 : calculatedMinY; // Ensure min < max
+    final finalMaxY = calculatedMaxY < finalMinY ? finalMinY + 1 : calculatedMaxY; // Ensure max > min
+    final interval = ((finalMaxY - finalMinY) / 4).clamp(1.0, double.infinity); // Recalculate interval
+
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0), // Adjust padding
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(title, style: textTheme.titleMedium),
+            const SizedBox(height: 20), // Increased space
+            SizedBox(
+              height: 150,
+              child: spots.isEmpty
+                ? Center(child: Text("No data available", style: textTheme.bodySmall))
+                : LineChart(
+                LineChartData(
+                  minY: finalMinY,
+                  maxY: finalMaxY,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: interval,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.grey.withOpacity(0.3),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 22,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) => _bottomTitleWidgets(value, meta, totalLogs),
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 28,
+                        interval: interval,
+                        getTitlesWidget: _leftTitleWidgets,
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: color,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: color.withOpacity(0.2),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+// --- Patterns Page Implementation ---
+class PatternsPage extends StatelessWidget {
+  const PatternsPage({super.key});
+
+  // Helper to extract and parse the patterns section
+  List<String> _extractPatterns(String rawNarrative) {
+    final patternsSectionStart = rawNarrative.indexOf("<p><strong>Pattern Spotlight:");
+    if (patternsSectionStart == -1) return [];
+
+    // Find the start of the <ul> tag after the spotlight header
+    final ulStart = rawNarrative.indexOf("<ul>", patternsSectionStart);
+    if (ulStart == -1) return [];
+
+    // Find the end of the </ul> tag after the ulStart
+    final patternsSectionEnd = rawNarrative.indexOf("</ul>", ulStart);
+    if (patternsSectionEnd == -1) return [];
+
+    // Extract the content between <ul> and </ul>
+    final patternsHtml = rawNarrative.substring(ulStart + 4, patternsSectionEnd); // +4 to skip <ul>
+    final listItemsHtml = RegExp(r'<li>(.*?)</li>', dotAll: true).allMatches(patternsHtml);
+
+    return listItemsHtml.map((match) {
+      // Strip HTML tags from each list item and clean up whitespace
+      return _stripHtmlTags(match.group(1) ?? '').trim();
+    }).where((pattern) => pattern.isNotEmpty).toList(); // Filter out empty strings
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final patterns = _extractPatterns(dummyNarrativeRaw);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Potential Health Patterns", style: textTheme.headlineSmall),
+          const SizedBox(height: 16),
+          if (patterns.isEmpty)
+            Card( // Wrap the message in a card for consistency
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(child: Text("No patterns identified yet.", style: textTheme.bodyMedium)),
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true, // Important for ListView inside Column
+              physics: const NeverScrollableScrollPhysics(), // Disable scrolling for inner ListView
+              itemCount: patterns.length,
+              itemBuilder: (context, index) {
+                final pattern = patterns[index];
+                // Try to bold the first part before the colon
+                final parts = pattern.split(':');
+                // Handle cases where there might not be a colon
+                final title = parts.length > 1 ? parts[0].trim().replaceAll('<strong>', '').replaceAll('</strong>', '') : 'Pattern ${index + 1}';
+                final description = parts.length > 1 ? parts.sublist(1).join(':').trim() : pattern;
+
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: textTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        Text(description, style: textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// --- Main App Screen with Drawer ---
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -218,93 +820,210 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _MyHomePageState extends State<MyHomePage> {
+  int _selectedPageIndex = 0; // Index for the selected page
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this); // Increased length to 4
-  }
+  // List of pages accessible from the drawer
+  final List<Widget> _pages = [
+    const DailyLogView(),
+    const WeeklyNarrativeView(),
+    const SummaryPage(), // New Summary Page
+    const PatternsPage(), // New Patterns Page
+    const DoctorPrepView(),
+    const AddRecordView(),
+  ];
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  // Titles corresponding to the pages
+  final List<String> _pageTitles = [
+    'Daily Log',
+    'Weekly View',
+    'Summary',
+    'Patterns',
+    'Doctor Prep',
+    'Add Record',
+  ];
+
+  void _selectPage(int index) {
+    setState(() {
+      _selectedPageIndex = index;
+    });
+    Navigator.of(context).pop(); // Close the drawer
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('HealthSync'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Daily'),
-            Tab(text: 'Weekly'),
-            Tab(text: 'Doctor Visits'),
-            Tab(text: 'Add Record'), // Added new tab
+        title: Text(_pageTitles[_selectedPageIndex]), // Dynamic title
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              child: const Text(
+                'HealthSync Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            for (int i = 0; i < _pages.length; i++)
+              ListTile(
+                leading: Icon(_getIconForPage(i)), // Add icons later
+                title: Text(_pageTitles[i]),
+                selected: i == _selectedPageIndex,
+                onTap: () => _selectPage(i),
+              ),
+             const Divider(),
+             ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: () {
+                   // Navigate back to login page
+                   Navigator.pushReplacement(
+                     context,
+                     MaterialPageRoute(builder: (context) => const LoginPage()),
+                   );
+                },
+              ),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          DailyLogView(),
-          WeeklyNarrativeView(), // Now stateful
-          DoctorPrepView(),
-          AddRecordView(), // Replaced Placeholder with AddRecordView
-        ],
-      ),
+      body: _pages[_selectedPageIndex], // Show the selected page
     );
+  }
+
+   // Helper to get icons (replace with actual icons later)
+  IconData _getIconForPage(int index) {
+    switch (index) {
+      case 0: return Icons.calendar_today;
+      case 1: return Icons.bar_chart;
+      case 2: return Icons.insights; // Summary
+      case 3: return Icons.pattern; // Patterns
+      case 4: return Icons.medical_services_outlined; // Doctor Prep
+      case 5: return Icons.add_circle_outline; // Add Record
+      default: return Icons.circle;
+    }
   }
 }
 
-// --- Tab View Widgets ---
 
-class DailyLogView extends StatelessWidget {
+// --- Existing View Widgets (Now Pages) ---
+
+class DailyLogView extends StatefulWidget {
   const DailyLogView({super.key});
+
+  @override
+  State<DailyLogView> createState() => _DailyLogViewState();
+}
+
+class _DailyLogViewState extends State<DailyLogView> {
+  bool _sortAscending = false; // Default: Most recent first
+  List<Map<String, dynamic>> _sortedLogs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _sortLogs();
+  }
+
+  void _sortLogs() {
+    // Ensure intl is initialized if needed (usually not required for DateFormat)
+    final DateFormat format = DateFormat("EEEE, MMMM d, yyyy"); // Format to parse dates
+    List<Map<String, dynamic>> logsToSort = List.from(dummyLogs); // Create a mutable copy
+
+    logsToSort.sort((a, b) {
+      try {
+        DateTime dateA = format.parse(a['date']);
+        DateTime dateB = format.parse(b['date']);
+        return _sortAscending ? dateA.compareTo(dateB) : dateB.compareTo(dateA);
+      } catch (e) {
+        // Handle potential parsing errors, maybe log them
+        print("Error parsing date: $e");
+        return 0; // Keep original order if parsing fails
+      }
+    });
+
+    // Check if the widget is still mounted before calling setState
+    if (mounted) {
+      setState(() {
+        _sortedLogs = logsToSort;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return ListView.builder(
-      itemCount: dummyLogs.length,
-      itemBuilder: (context, index) {
-        final log = dummyLogs[index];
-        final healthData = log['healthData'] as Map<String, dynamic>;
-        final tags = log['tags'] as List<dynamic>;
+    return Column( // Wrap ListView in a Column to add the button row easily
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                label: Text(_sortAscending ? 'Oldest First' : 'Most Recent First'),
+                onPressed: () {
+                  setState(() {
+                    _sortAscending = !_sortAscending;
+                  });
+                  _sortLogs(); // Re-sort the logs
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.primary, // Use theme color
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded( // Make ListView take remaining space
+          child: ListView.builder(
+            itemCount: _sortedLogs.length, // Count only the logs now
+            itemBuilder: (context, index) {
+              // No need to adjust index anymore
+              final log = _sortedLogs[index];
+              final healthData = log['healthData'] as Map<String, dynamic>;
+              final tags = log['tags'] as List<dynamic>;
 
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(log['date'], style: textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text('Mood: ${log['mood']}'),
-                Text('Energy: ${log['energy']}'),
-                Text('Symptoms: ${log['symptoms']}'),
-                const SizedBox(height: 4),
-                Text('Notes: ${log['notes']}'),
-                const SizedBox(height: 4),
-                Text('Tags: ${tags.join(', ')}', style: const TextStyle(fontStyle: FontStyle.italic)),
-                const SizedBox(height: 8),
-                Text('Apple Health Data:', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0, top: 4.0),
-                  child: Text(
-                    'Sleep: ${healthData['sleep']} | Steps: ${healthData['steps']} | Active Calories: ${healthData['activeCalories']} | Resting HR: ${healthData['restingHR']}',
-                    style: textTheme.bodySmall,
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(log['date'], style: textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      Text('Mood: ${log['mood']}'),
+                      Text('Energy: ${log['energy']}'),
+                      Text('Symptoms: ${log['symptoms']}'),
+                      const SizedBox(height: 4),
+                      Text('Notes: ${log['notes']}'),
+                      const SizedBox(height: 4),
+                      Text('Tags: ${tags.join(', ')}', style: const TextStyle(fontStyle: FontStyle.italic)),
+                      const SizedBox(height: 8),
+                      Text('Apple Health Data:', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0, top: 4.0),
+                        child: Text(
+                          'Sleep: ${healthData['sleep']} | Steps: ${healthData['steps']} | Active Calories: ${healthData['activeCalories']} | Resting HR: ${healthData['restingHR']}',
+                          style: textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
