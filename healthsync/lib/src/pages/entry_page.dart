@@ -7,6 +7,7 @@ class EntryPage extends StatefulWidget {
   State<EntryPage> createState() => _EntryPageState();
 }
 
+// TODO: push this data to the DB after each entry
 Map<String, dynamic> entryData = {
   'mood': 3,
   'energyLevel': 3,
