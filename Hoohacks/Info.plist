@@ -6,5 +6,9 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>HealthSync needs access to your health data to provide personalized insights and track correlations between your activities and symptoms.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>HealthSync needs access to update your health data to help you track your health journey.</string>
 </dict>
 </plist>

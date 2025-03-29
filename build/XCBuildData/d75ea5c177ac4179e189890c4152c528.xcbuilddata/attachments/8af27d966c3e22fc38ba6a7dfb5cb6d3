@@ -1,0 +1,65 @@
+{
+  "" : {
+    "const-values" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Hoohacks-master.swiftconstvalues",
+    "dependencies" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Hoohacks-master.d",
+    "diagnostics" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Hoohacks-master.dia",
+    "emit-module-dependencies" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Hoohacks-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Hoohacks-master-emit-module.dia",
+    "swift-dependencies" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Hoohacks-master.swiftdeps"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/ContentView.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/HoohacksApp.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HoohacksApp.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HoohacksApp.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HoohacksApp.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Item.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Item.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Item.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/Item.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Models/HealthData.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HealthData.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HealthData.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HealthData.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Services/AIService.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/AIService.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/AIService.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/AIService.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Services/HealthKitService.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HealthKitService.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HealthKitService.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/HealthKitService.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Views/DoctorVisitPrepView.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/DoctorVisitPrepView.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/DoctorVisitPrepView.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/DoctorVisitPrepView.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Views/JournalEntryView.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/JournalEntryView.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/JournalEntryView.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/JournalEntryView.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Views/PatternAnalysisView.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/PatternAnalysisView.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/PatternAnalysisView.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/PatternAnalysisView.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/Hoohacks/Views/WeeklySummaryView.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/WeeklySummaryView.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/WeeklySummaryView.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/WeeklySummaryView.o"
+  },
+  "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/kooshapari/temp-PRODVERCEL/hoohacks/untitled folder/Hoohacks/build/Hoohacks.build/Release/Hoohacks.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

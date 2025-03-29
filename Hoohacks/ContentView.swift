@@ -10,57 +10,66 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    @State private var selectedTab = 0
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+        TabView(selection: $selectedTab) {
+            JournalEntryView()
+                .tabItem {
+                    Label("Journal", systemImage: "square.and.pencil")
                 }
-                .onDelete(perform: deleteItems)
-            }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                .tag(0)
+            
+            WeeklySummaryView()
+                .tabItem {
+                    Label("Weekly", systemImage: "chart.bar.xaxis")
                 }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+                .tag(1)
+            
+            PatternAnalysisView()
+                .tabItem {
+                    Label("Patterns", systemImage: "puzzlepiece")
                 }
-            }
-        } detail: {
-            Text("Select an item")
+                .tag(2)
+            
+            DoctorVisitPrepView()
+                .tabItem {
+                    Label("Doctor Visit", systemImage: "stethoscope")
+                }
+                .tag(3)
+        }
+        .onAppear {
+            setupInitialData()
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+    
+    private func setupInitialData() {
+        // Check if we have any data already
+        let journalFetchDescriptor = FetchDescriptor<JournalEntry>()
+        
+        do {
+            let journalEntriesCount = try modelContext.fetchCount(journalFetchDescriptor)
+            
+            // If there are no journal entries, seed with mock data
+            if journalEntriesCount == 0 {
+                MockDataGenerator.createMockJournalEntries(modelContext: modelContext)
+                _ = MockDataGenerator.createMockWeeklySummary(modelContext: modelContext)
+                _ = MockDataGenerator.createMockDoctorVisitSummary(modelContext: modelContext)
             }
+        } catch {
+            print("Error checking for existing data: \(error)")
         }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: [
+            JournalEntry.self,
+            Symptom.self,
+            WeeklySummary.self,
+            Pattern.self,
+            DoctorVisitSummary.self,
+            SymptomSummary.self
+        ], inMemory: true)
 }
