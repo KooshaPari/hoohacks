@@ -12,6 +12,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+Widget insightGraph = Container();
+
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: const Column(
+                  child: Column(
                     children: [
                       Row(
                         children: [
@@ -40,6 +42,7 @@ class _HomePageState extends State<HomePage> {
                             color: Colors.purple,
                           ),
                           SizedBox(width: 10),
+                          insightGraph, // optional, if it exists then update it to be an actual graph, else don't keep it
                           Text(
                             'Your Monthly Insights',
                             style: TextStyle(
