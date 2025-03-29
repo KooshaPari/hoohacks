@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-Widget insightGraph = Container();
+Widget insightGraph = Container(); // placeholder, update if graph is available
 
 class _HomePageState extends State<HomePage> {
   @override
