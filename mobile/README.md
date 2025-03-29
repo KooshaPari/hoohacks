@@ -1,4 +1,4 @@
-# healthsync
+# mobile
 
 A new Flutter project.
 
