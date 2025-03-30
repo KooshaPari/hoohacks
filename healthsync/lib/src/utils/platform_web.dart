@@ -1,26 +1,41 @@
-// platform_web.dart - Web implementation
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+// Use conditional import for web-only libraries
+import 'dart:html' if (dart.library.io) './platform_html_stub.dart';
 import 'platform_interface.dart';
 
-class PlatformImpl implements PlatformInterface {
+class PlatformWeb implements PlatformInterface {
   @override
-  String getLocationOrigin() {
-    return html.window.location.origin;
+  String? getCurrentUrl() {
+    return window.location.href;
   }
-
+  
+  @override
+  bool isAuth0Ready() {
+    // Implement your Auth0 check logic here
+    return true; // Replace with actual implementation
+  }
+  
   @override
   String getLocationPath() {
-    return html.window.location.pathname;
+    // Fix null safety issue by returning empty string when null
+    return window.location.pathname ?? '';
   }
   
   @override
-  String getFullUrl() {
-    return html.window.location.href;
+  String getUserAgent() {
+    return window.navigator.userAgent;
   }
   
   @override
-  bool containsParam(String param) {
-    return html.window.location.href.contains(param);
+  bool isMobile() {
+    // Implement mobile detection logic
+    final userAgent = window.navigator.userAgent.toLowerCase();
+    return userAgent.contains('mobile') || 
+           userAgent.contains('android') || 
+           userAgent.contains('iphone');
   }
+}
+
+// Implementation for the factory method
+PlatformInterface createPlatformImplementation() {
+  return PlatformWeb();
 }

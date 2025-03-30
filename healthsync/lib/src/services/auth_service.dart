@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:web/web.dart' as web;
+// Removed web import - it's not compatible with iOS/Android
+// import 'package:web/web.dart' as web;
 import 'package:healthsync/src/models/user_model.dart';
 import 'package:healthsync/src/services/user_service.dart';
+import 'package:healthsync/src/utils/platform_url_helper.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
@@ -86,7 +88,7 @@ class AuthService {
       if (kIsWeb && auth0Web != null) {
         // Web login with redirect flow
         await auth0Web!.loginWithRedirect(
-            redirectUrl: 'http://localhost:3000',
+            redirectUrl: PlatformUrlHelper.getBaseUrl(),
             parameters: {'connection': connection});
         // User will be processed after redirect in handleRedirectCallback
         return null;
@@ -306,7 +308,8 @@ class AuthService {
 
       // Call Auth0 logout
       if (kIsWeb && auth0Web != null) {
-        await auth0Web!.logout(returnToUrl: web.window.location.origin);
+        // Use our platform helper for the return URL
+        await auth0Web!.logout(returnToUrl: PlatformUrlHelper.getOrigin());
       } else {
         await auth0.webAuthentication(scheme: scheme).logout();
       }

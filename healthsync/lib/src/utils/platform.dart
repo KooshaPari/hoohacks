@@ -1,16 +1,12 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'platform_interface.dart';
+// Use conditional imports to load the right implementation
+import 'platform_stub.dart' if (dart.library.html) 'platform_web.dart';
 
-// Conditional imports
-import 'native_platform.dart' if (dart.library.html) 'web_platform.dart';
-
-/// Factory to get the appropriate platform implementation
-PlatformInterface getPlatform() {
-  if (kIsWeb) {
-    // This will use the web_platform.dart import on web
-    return WebPlatform();
-  } else {
-    // This will use the native_platform.dart import on native platforms
-    return NativePlatform();
+class Platform {
+  static PlatformInterface getInstance() {
+    return createPlatformImplementation();
   }
 }
+
+// The createPlatformImplementation function is imported from either
+// platform_stub.dart or platform_web.dart depending on the platform

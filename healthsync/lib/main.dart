@@ -1,5 +1,4 @@
 import 'package:auth0_flutter/auth0_flutter.dart'; // Import base package
-// To check if running on web
 import 'package:flutter/material.dart';
 import 'package:healthsync/src/components/navbar.dart';
 import 'package:healthsync/src/pages/homepage.dart';
@@ -12,7 +11,7 @@ import 'package:healthsync/src/utils/consent_manager.dart';
 import 'package:healthsync/src/utils/health_utils.dart';
 import 'package:healthsync/src/pages/login_page.dart'; // Import LoginPage
 import 'package:healthsync/src/pages/about_page.dart'; // Import AboutPage
-
+import 'src/utils/platform.dart';
 // Initialize Auth0 for native platforms
 // Web initialization will happen within LoginPage
 final Auth0 auth0 = Auth0('dev-a01zqddvyzlcd8j4.us.auth0.com', 'aFy0NakvJVNFbWPpPwjkd0QfRmKPPajc');
@@ -20,17 +19,16 @@ final Auth0 auth0 = Auth0('dev-a01zqddvyzlcd8j4.us.auth0.com', 'aFy0NakvJVNFbWPp
 // Define the Android scheme (only needed for native Android)
 const String auth0Scheme = 'com.phenotype.healthsync';
 
-void main() async {
-  // Ensure widget binding is initialized
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  // Get the appropriate platform instance
+  final platform = Platform.getInstance();
   
-  // Initialize services
-  await _initializeServices();
+  // Now you can use platform methods safely
+  print('Is mobile: ${platform.isMobile()}');
   
-  // Run the app
-  runApp(const MyApp());
+  // Rest of your app initialization
+  runApp(MyApp());
 }
-
 // Initialize all services
 Future<void> _initializeServices() async {
   // Configure health data access

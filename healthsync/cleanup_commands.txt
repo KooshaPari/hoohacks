@@ -1,0 +1,10 @@
+Run these commands in your terminal:
+
+# Clean the Flutter project
+flutter clean
+
+# Get dependencies after cleaning
+flutter pub get
+
+# Try building for iOS again
+flutter build ios
