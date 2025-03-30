@@ -111,7 +111,7 @@ class AuthService {
         'id_token': credentials.idToken,
         'refresh_token': credentials.refreshToken,
         'expires_at': credentials.expiresAt?.millisecondsSinceEpoch,
-        'scope': credentials.scope,
+        // 'scope': credentials.scope, // Commented out due to potential API change / error
         'sub': credentials.user.sub,
         'user': {
           'sub': credentials.user.sub,

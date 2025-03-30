@@ -1,7 +1,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:async'; // Import Completer
+import 'dart:io'; 
+import 'package:flutter/foundation.dart' show kIsWeb; 
 import 'package:health/health.dart';
-import 'package:health_kit_reporter/health_kit_reporter.dart' as hk_reporter;
+// Keep import without alias for static calls
+import 'package:health_kit_reporter/health_kit_reporter.dart'; 
 import 'package:healthsync/src/models/user_model.dart';
 import 'package:healthsync/src/services/auth_service.dart';
 import 'package:healthsync/src/services/user_service.dart';
@@ -17,10 +21,9 @@ class HealthService {
   // Health package instance
   final Health _health = Health();
 
-  // Healthkit reporter instance for more advanced HealthKit access
-  hk_reporter.HealthKitReporter? _healthKitReporter;
+  // No instance variable needed for health_kit_reporter
 
-  // Define standard health data types
+  // Define standard health data types (from health package)
   final List<HealthDataType> _healthDataTypes = [
     HealthDataType.STEPS,
     HealthDataType.HEART_RATE,
@@ -49,10 +52,7 @@ class HealthService {
       // Configure the health package
       await _health.configure();
       
-      // Initialize HealthKitReporter on iOS
-      if (Platform.isIOS) {
-        _healthKitReporter = hk_reporter.HealthKitReporter();
-      }
+      // No instance initialization needed
       
       // Check if current user has already given consent in our database
       await _checkPersistedConsent();
@@ -67,10 +67,13 @@ class HealthService {
     final User? currentUser = _authService.currentUser;
     if (currentUser == null) return;
 
-    if (Platform.isIOS && currentUser.hasHealthkitConsent) {
-      // For iOS, check if HealthKit permissions are still valid
-      await _checkHealthKitPermissions();
-    } else if (Platform.isAndroid && currentUser.hasGoogleFitConsent) {
+    // Removed the call to _checkHealthKitPermissions as it was causing issues.
+    // Relying on requestHealthPermissions to handle authorization checks.
+    // if (Platform.isIOS && currentUser.hasHealthkitConsent) {
+    //   // For iOS, check if HealthKit permissions are still valid
+    //   await _checkHealthKitPermissions();
+    // } else 
+    if (Platform.isAndroid && currentUser.hasGoogleFitConsent) {
       // For Android, check if Health Connect permissions are still valid
       await _checkHealthConnectPermissions();
     }
@@ -116,27 +119,7 @@ class HealthService {
     }
   }
 
-  // Check if HealthKit permissions are valid on iOS
-  Future<void> _checkHealthKitPermissions() async {
-    if (!Platform.isIOS || _healthKitReporter == null) return;
-
-    try {
-      // Define the types to check permission for
-      List<hk_reporter.HealthKitDataType> types = [
-        hk_reporter.HealthKitDataType.stepCount,
-        hk_reporter.HealthKitDataType.heartRate,
-        hk_reporter.HealthKitDataType.activeEnergyBurned,
-        hk_reporter.HealthKitDataType.sleepAnalysis,
-      ];
-
-      // Check permissions for each type
-      final permissions = await _healthKitReporter!.isAuthorized(types);
-      _isAuthorized = permissions.contains(true);
-    } catch (e) {
-      print('Error checking HealthKit permissions: $e');
-      _isAuthorized = false;
-    }
-  }
+  // Removed _checkHealthKitPermissions method
 
   // Check if Health Connect permissions are valid on Android
   Future<void> _checkHealthConnectPermissions() async {
@@ -152,34 +135,34 @@ class HealthService {
     }
   }
 
-  // Request HealthKit permissions on iOS
+  // Request HealthKit permissions on iOS using static method and string IDs (for v2.3.1)
   Future<bool> _requestHealthKitPermissions() async {
-    if (!Platform.isIOS || _healthKitReporter == null) return false;
+    if (!Platform.isIOS) return false; 
 
     try {
-      // Define the read and write types
-      List<hk_reporter.HealthKitDataType> readTypes = [
-        hk_reporter.HealthKitDataType.stepCount,
-        hk_reporter.HealthKitDataType.heartRate,
-        hk_reporter.HealthKitDataType.activeEnergyBurned,
-        hk_reporter.HealthKitDataType.sleepAnalysis,
-        hk_reporter.HealthKitDataType.bloodGlucose,
-        hk_reporter.HealthKitDataType.bloodOxygen,
-        hk_reporter.HealthKitDataType.bloodPressureSystolic,
-        hk_reporter.HealthKitDataType.bloodPressureDiastolic,
-        hk_reporter.HealthKitDataType.bodyTemperature,
-        hk_reporter.HealthKitDataType.bodyMass,
-        hk_reporter.HealthKitDataType.height,
+      // Define the read and write types as strings
+       const List<String> readTypes = [
+        'HKQuantityTypeIdentifierStepCount',
+        'HKQuantityTypeIdentifierHeartRate',
+        'HKQuantityTypeIdentifierActiveEnergyBurned',
+        'HKCategoryTypeIdentifierSleepAnalysis',
+        'HKQuantityTypeIdentifierBloodGlucose',
+        'HKQuantityTypeIdentifierBloodOxygenSaturation', 
+        'HKQuantityTypeIdentifierBloodPressureSystolic',
+        'HKQuantityTypeIdentifierBloodPressureDiastolic',
+        'HKQuantityTypeIdentifierBodyTemperature',
+        'HKQuantityTypeIdentifierBodyMass', 
+        'HKQuantityTypeIdentifierHeight',
       ];
 
-      List<hk_reporter.HealthKitDataType> writeTypes = [
-        hk_reporter.HealthKitDataType.stepCount,
-        hk_reporter.HealthKitDataType.activeEnergyBurned,
-        hk_reporter.HealthKitDataType.heartRate,
+      const List<String> writeTypes = [
+        'HKQuantityTypeIdentifierStepCount',
+        'HKQuantityTypeIdentifierActiveEnergyBurned',
+        'HKQuantityTypeIdentifierHeartRate',
       ];
 
-      // Request authorization
-      final isAuthorized = await _healthKitReporter!.requestAuthorization(readTypes, writeTypes);
+      // Request authorization using static method and string types
+      final bool isAuthorized = await HealthKitReporter.requestAuthorization(readTypes, writeTypes);
       return isAuthorized;
     } catch (e) {
       print('Error requesting HealthKit permissions: $e');
@@ -233,13 +216,19 @@ class HealthService {
             .toList();
 
         if (dataPoints.isNotEmpty) {
-          // For heart rate, calculate average
+          // For heart rate, calculate average, ensuring value is NumericHealthValue
           if (type == HealthDataType.HEART_RATE) {
             double sum = 0;
+            int count = 0;
             for (var point in dataPoints) {
-              sum += point.value.toDouble();
+              if (point.value is NumericHealthValue) {
+                 sum += (point.value as NumericHealthValue).numericValue.toDouble();
+                 count++;
+              }
             }
-            healthData[type] = sum / dataPoints.length;
+             if (count > 0) {
+               healthData[type] = sum / count;
+             }
           }
           // For sleep, calculate total time
           else if (type == HealthDataType.SLEEP_IN_BED) {
@@ -250,10 +239,11 @@ class HealthService {
             }
             healthData[type] = totalMinutes;
           }
-          // For other types, use the latest value
-          else {
-            healthData[type] = dataPoints.last.value;
+          // For other numeric types, use the latest value, ensuring it's numeric
+          else if (dataPoints.last.value is NumericHealthValue) {
+             healthData[type] = (dataPoints.last.value as NumericHealthValue).numericValue;
           }
+          // Handle other potential types if needed, otherwise they are skipped
         }
       }
 
