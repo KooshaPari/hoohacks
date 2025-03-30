@@ -73,7 +73,7 @@ class AuthService {
 
       if (appUser == null) {
         // If user doesn't exist in our DB, create them
-        print('User not found in DB, creating new user entry...');
+        print('User not found in DB, attempting to create new user entry...');
         final newUser = AppUser.User(
           id: '', // DB will assign ID
           firebaseUid: firebaseUser.uid,
@@ -94,8 +94,30 @@ class AuthService {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        appUser = await _userService.createUser(newUser);
-        print('New user created in DB: ${appUser?.email}');
+        
+        try {
+          appUser = await _userService.createUser(newUser);
+          print('New user created in DB: ${appUser?.email}');
+        } catch (e) {
+          print('Error creating user in DB: $e');
+          // Create a temporary app user with the Firebase data if DB is unavailable
+          // This way users can still use the app even if the DB is down
+          appUser = AppUser.User(
+            id: 'temp_' + firebaseUser.uid, // Temporary ID
+            firebaseUid: firebaseUser.uid,
+            email: firebaseUser.email ?? '',
+            name: firebaseUser.displayName,
+            authProvider: firebaseUser.providerData.isNotEmpty
+                ? firebaseUser.providerData[0].providerId
+                : 'firebase',
+            authProviderData: {},
+            hasHealthkitConsent: false,
+            hasGoogleFitConsent: false,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+          print('Created temporary user object: ${appUser.email}');
+        }
       } else {
         // Optionally update user data from Firebase if needed
         // Example: Check if name or photoURL changed
@@ -109,13 +131,18 @@ class AuthService {
 
         if (needsUpdate) {
           print('Updating existing user data from Firebase...');
-          appUser = await _userService.updateUser(
-              appUser.id,
-              appUser.copyWith(
-                name: firebaseUser.displayName, // Example update
-                updatedAt: DateTime.now(),
-              ));
-          print('User data updated.');
+          try {
+            appUser = await _userService.updateUser(
+                appUser.id,
+                appUser.copyWith(
+                  name: firebaseUser.displayName, // Example update
+                  updatedAt: DateTime.now(),
+                ));
+            print('User data updated.');
+          } catch (e) {
+            print('Error updating user data: $e');
+            // Continue with existing user data
+          }
         }
       }
 
@@ -123,8 +150,24 @@ class AuthService {
       return _currentUser;
     } catch (e) {
       print('Error mapping Firebase user to AppUser: $e');
-      _currentUser = null; // Ensure state is cleared on error
-      return null;
+      
+      // Create a basic user object even if DB operations fail
+      // This ensures users can still use the app if backend is unavailable
+      AppUser.User fallbackUser = AppUser.User(
+        id: 'offline_' + firebaseUser.uid,
+        firebaseUid: firebaseUser.uid,
+        email: firebaseUser.email ?? '',
+        name: firebaseUser.displayName,
+        authProvider: 'firebase',
+        authProviderData: {},
+        hasHealthkitConsent: false,
+        hasGoogleFitConsent: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      
+      _currentUser = fallbackUser;
+      return fallbackUser;
     }
   }
 

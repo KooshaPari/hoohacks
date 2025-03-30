@@ -8,18 +8,17 @@ import 'package:healthsync/src/models/user_model.dart';
 
 class UserService {
   // API URL - Update with your actual backend URL
-  // Using a dynamic API base URL that can be configured based on environment
   static String get apiBaseUrl {
-    // For web platform, use relative URL to avoid CORS
+    // For web platform in development
     if (kIsWeb) {
-      // Since we're running on localhost:3000, use local API
       return 'http://localhost:5001'; // Local development API
-      
-      // For production, use relative URL
-      // return '/api';
     }
-    // For native platforms, use the hardcoded IP/port
-    return 'http://10.142.40.109:5001';
+    // For production, you might want to use a relative URL or your actual domain
+    // return 'https://yourdomain.com/api';
+    
+    // For native platforms, use the appropriate IP/port
+    // For emulators, use 10.0.2.2 to access the host machine
+    return 'http://10.0.2.2:5001';
   }
   
   // Create an HTTP client with a reasonable timeout
