@@ -23,24 +23,36 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadInsights() async {
-    setState(() {
-      _isLoading = true;
-    });
+  setState(() {
+    _isLoading = true;
+  });
 
+  try {
+    final insights = await _insightsService.getHealthInsights();
+    setState(() {
+      _insights = insights;
+      _isLoading = false;
+    });
+  } catch (e) {
+    print('Error loading insights: $e');
+    
+    // Try again with a delay instead of using placeholder
+    await Future.delayed(const Duration(seconds: 2));
     try {
       final insights = await _insightsService.getHealthInsights();
       setState(() {
         _insights = insights;
         _isLoading = false;
       });
-    } catch (e) {
-      print('Error loading insights: $e');
+    } catch (secondError) {
+      // Show error state instead of placeholder
       setState(() {
-        _insights = HealthInsight.placeholder();
         _isLoading = false;
+        // Keep _insights as null to show error UI
       });
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
