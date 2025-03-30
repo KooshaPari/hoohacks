@@ -68,7 +68,7 @@ Future<void> fetchHealthData() async {
       types: healthDataTypes,
     );
 
-    if (healthData != null && healthData.isNotEmpty) {
+    if (healthData.isNotEmpty) {
       for (var dataPoint in healthData) {
         print('Type: ${dataPoint.type}, Value: ${dataPoint.value}');
       }

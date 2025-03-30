@@ -26,18 +26,18 @@ class AboutPage extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
+            children: const <Widget>[
+              Text(
                 'HealthSync',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16),
+              Text(
                 'Version: $appVersion', // Use the constant here
                 style: TextStyle(fontSize: 18),
               ),
-              const SizedBox(height: 24),
-              const Text(
+              SizedBox(height: 24),
+              Text(
                 'Your personal health tracking companion.',
                 style: TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,

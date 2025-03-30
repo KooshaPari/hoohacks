@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:html' if (dart.library.html) 'dart:html' as html;
 import 'package:healthsync/src/models/user_model.dart';
 import 'package:healthsync/src/services/user_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -38,21 +39,36 @@ class AuthService {
   // Initialize and check existing credentials
   Future<void> initialize() async {
     try {
+      print('Initializing AuthService...');
+      
+      // Initialize Auth0Web instance if on Web
+      if (kIsWeb) {
+        auth0Web = Auth0Web(domain, clientId);
+        print('Auth0Web initialized for web platform');
+      }
+      
       // Try to load persisted credentials
       final String? credentialsJson =
           await _storage.read(key: 'auth0_credentials');
 
       if (credentialsJson != null) {
+        print('Found stored credentials, attempting to restore session');
         // Try to parse stored credentials
         Map<String, dynamic> credentialsMap = jsonDecode(credentialsJson);
 
-        // TODO: Add proper credentials validation and refresh if needed
-
-        // Fetch the user from the database
-        await _getUserFromDb(credentialsMap['sub'] ??
+        // Extract user information
+        final String? sub = credentialsMap['sub'] ??
             (credentialsMap['user'] != null
                 ? credentialsMap['user']['sub']
-                : null));
+                : null);
+        
+        if (sub != null) {
+          print('User ID found in stored credentials: $sub');
+          // Fetch the user from the database
+          await _getUserFromDb(sub);
+        }
+      } else {
+        print('No stored credentials found');
       }
     } catch (e) {
       print('Error initializing AuthService: $e');
@@ -93,7 +109,11 @@ class AuthService {
     if (!kIsWeb || auth0Web == null) return null;
 
     try {
+      // Add debug log
+      print('Attempting to handle Auth0 redirect callback...');
       final credentials = await auth0Web!.onLoad();
+      print('Auth0 redirect callback result: ${credentials != null ? 'Success' : 'No credentials found'}');
+      
       if (credentials != null) {
         return await processAuthentication(credentials);
       }
@@ -109,28 +129,88 @@ class AuthService {
     _credentials = credentials;
 
     // Save credentials securely
-    await _storage.write(
-      key: 'auth0_credentials',
-      value: jsonEncode({
-        'access_token': credentials.accessToken,
-        'id_token': credentials.idToken,
-        'refresh_token': credentials.refreshToken,
-        'expires_at': credentials.expiresAt?.millisecondsSinceEpoch,
-        // 'scope': credentials.scope, // Commented out due to potential API change / error
-        'sub': credentials.user.sub,
-        // Explicitly create the user map, ensuring all values are JSON encodable
-        'user': {
-          'sub': credentials.user.sub ?? '', // Ensure sub is string or empty
-          'name': credentials.user.name ?? '', // Ensure name is string or empty
-          'email': credentials.user.email ?? '', // Ensure email is string or empty
-          'picture': credentials.user.pictureUrl?.toString() ?? '', // Ensure picture is string or empty
-          // Add other known UserProfile fields if needed, ensuring they are encodable
-        }
-      }),
-    );
+    try {
+      await _storage.write(
+        key: 'auth0_credentials',
+        value: jsonEncode({
+          'access_token': credentials.accessToken,
+          'id_token': credentials.idToken,
+          'refresh_token': credentials.refreshToken,
+          'expires_at': credentials.expiresAt.millisecondsSinceEpoch,
+          'sub': credentials.user.sub,
+          // Explicitly create the user map, ensuring all values are JSON encodable
+          'user': {
+            'sub': credentials.user.sub ?? '', // Ensure sub is string or empty
+            'name': credentials.user.name ?? '', // Ensure name is string or empty
+            'email': credentials.user.email ?? '', // Ensure email is string or empty
+            'picture': credentials.user.pictureUrl?.toString() ?? '', // Ensure picture is string or empty
+          }
+        }),
+      );
+      print('Auth0 credentials saved securely');
+    } catch (e) {
+      print('Error saving credentials: $e');
+      // Continue even if storage fails - this is not critical
+    }
 
-    // Create or get user in the database
-    return await _createOrGetUser(credentials);
+    try {
+      // Try to create or get user in the database
+      print('Attempting to create or get user in database');
+      final user = await _createOrGetUser(credentials);
+      if (user != null) {
+        print('User successfully retrieved/created in database: ${user.email}');
+        return user;
+      }
+    } catch (e) {
+      print('Error creating/getting user in database: $e');
+    }
+    
+    // If we get here, either the database connection failed or user creation failed
+    // Create a fallback user from Auth0 credentials to allow the app to function
+    print('Using fallback user creation from Auth0 credentials');
+    return await _createFallbackUser(credentials);
+  }
+  
+  // Create a fallback user from Auth0 credentials when backend is unavailable
+  Future<User?> _createFallbackUser(Credentials credentials) async {
+    try {
+      final auth0User = credentials.user;
+      final userEmail = auth0User.email;
+      
+      // If no email is available, we can't create a valid user
+      if (userEmail == null || userEmail.isEmpty) {
+        print('Error: No email provided by authentication provider');
+        return null;
+      }
+      
+      // Extract provider from sub field (e.g., 'google-oauth2|123456')
+      String provider = 'unknown';
+      if (auth0User.sub.contains('|')) {
+        provider = auth0User.sub.split('|')[0];
+      }
+      
+      // Create a local user object
+      print('Creating fallback user for: $userEmail');
+      return User(
+        id: auth0User.sub ?? '', // Use sub as ID for fallback
+        email: userEmail,
+        name: auth0User.name,
+        authProvider: provider,
+        authProviderData: {
+          'sub': auth0User.sub ?? '',
+          'name': auth0User.name ?? '',
+          'email': userEmail,
+          'picture': auth0User.pictureUrl?.toString() ?? '',
+        },
+        hasHealthkitConsent: false,
+        hasGoogleFitConsent: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    } catch (e) {
+      print('Error creating fallback user: $e');
+      return null;
+    }
   }
 
   // Create or get user in the database
@@ -226,7 +306,7 @@ class AuthService {
 
       // Call Auth0 logout
       if (kIsWeb && auth0Web != null) {
-        await auth0Web!.logout(returnToUrl: 'http://localhost:3000');
+        await auth0Web!.logout(returnToUrl: html.window.location.origin);
       } else {
         await auth0.webAuthentication(scheme: scheme).logout();
       }

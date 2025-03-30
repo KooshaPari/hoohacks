@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:healthsync/src/components/graph.dart';
 import 'package:healthsync/src/components/data_card.dart';
-import 'package:healthsync/src/components/navbar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});

@@ -27,8 +27,14 @@
   <meta name="apple-mobile-web-app-title" content="healthsync">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Auth0 SPA JS -->
-  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js" defer></script>
+  <!-- Auth0 SPA JS - Load synchronously to ensure it's available -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+  
+  <!-- Ensure script loading is complete before Flutter initialization -->
+  <script>
+    // Simple script to ensure Auth0 is loaded
+    console.log('Auth0 SPA JS loaded');
+  </script>
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>

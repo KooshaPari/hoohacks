@@ -1,8 +1,6 @@
 import 'package:auth0_flutter/auth0_flutter.dart'; // Import base package
-import 'package:flutter/foundation.dart' show kIsWeb; // To check if running on web
+// To check if running on web
 import 'package:flutter/material.dart';
-import 'package:healthsync/src/components/graph.dart';
-import 'package:healthsync/src/components/data_card.dart';
 import 'package:healthsync/src/components/navbar.dart';
 import 'package:healthsync/src/pages/homepage.dart';
 import 'package:healthsync/src/pages/weekly_summary.dart';
@@ -20,7 +18,7 @@ import 'package:healthsync/src/pages/about_page.dart'; // Import AboutPage
 final Auth0 auth0 = Auth0('dev-a01zqddvyzlcd8j4.us.auth0.com', 'aFy0NakvJVNFbWPpPwjkd0QfRmKPPajc');
 
 // Define the Android scheme (only needed for native Android)
-const String auth0Scheme = 'com.example.healthsync';
+const String auth0Scheme = 'com.phenotype.healthsync';
 
 void main() async {
   // Ensure widget binding is initialized

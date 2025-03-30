@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:async'; // Import Completer
-import 'dart:io'; 
-import 'package:flutter/foundation.dart' show kIsWeb; 
 import 'package:health/health.dart';
 // Keep import without alias for static calls
 import 'package:health_kit_reporter/health_kit_reporter.dart'; 
