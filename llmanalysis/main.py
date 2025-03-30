@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
+from utility import clean_extra_symbols
+
 load_dotenv()
 app = FastAPI()
 
@@ -22,21 +24,25 @@ def get_db():
     return client[db_name]
 
 @app.get("/get_response")
-def get_response(prompt='', model="gemini-2.0-flash"):
+def get_response(prompt='', model="gemini-2.5-pro-exp-03-25"):
     client = genai.Client(api_key=get_api_key())
     response = client.models.generate_content(
         model= model,
-        contents=prompt
+        contents=prompt,
+        config={
+            'temperature': 0,
+        },
     )
     return response.text
 
-def get_config_response(prompt='', model="gemini-2.0-flash"):
+def get_config_response(prompt='', model="gemini-2.5-pro-exp-03-25"):
     client = genai.Client(api_key=get_api_key())
     response = client.models.generate_content(
         model= model,
         contents=prompt,
         config={
             'response_mime_type': 'application/json',
+            'temperature': 0
         },
     )
     return response.text
@@ -46,7 +52,7 @@ def llm_analysis(target='', sequence=[]):
     with open("prompt/analyzeanalysis_prompt.txt", "r", encoding="utf-8") as file:
             analysis_prompt_template = file.read()
     analysis_prompt = analysis_prompt_template + f"\nTopic: {target}\nList: {', '.join(sequence)}\nOutput:"
-    analysis_repsonse = get_response(analysis_prompt)
+    analysis_repsonse = clean_extra_symbols(get_response(analysis_prompt), prefix='Output')
 
     return analysis_repsonse
 
@@ -66,7 +72,7 @@ def llm_summary_week(context='', date=''):
     with open("prompt/summary_prompt.txt", "r", encoding="utf-8") as file:
         summary_prompt_template = file.read()
     summary_prompt = summary_prompt_template + f"\nDescriptions: {' '.join(descriptions)}\nSummary:"
-    summary_response = get_response(summary_prompt)
+    summary_response = clean_extra_symbols(get_response(summary_prompt), prefix='Summary')
     
     # push back to db
     
@@ -77,13 +83,13 @@ def llm_summary_week(context='', date=''):
 def llm_reflect(context='', date=''):
     
     data_window = 4 # 4 week for a month
-    summary = [] # from db
+    summary = [context] # from db
     
     with open("prompt/reflection_prompt.txt", "r", encoding="utf-8") as file:
         reflection_prompt_template = file.read()
     
-    reflection_prompt = reflection_prompt_template + f"Summary: {summary}\nReflection:"
-    reflection_response = get_response(reflection_prompt)
+    reflection_prompt = reflection_prompt_template + f"Summary: {' '.join(summary)}\nReflection:"
+    reflection_response = clean_extra_symbols(get_response(reflection_prompt), prefix='Reflection')
     
     # push back to db
     
@@ -95,7 +101,7 @@ def llm_response(prompt=''):
         data_template = json.load(file)
     
     reflection_prompt = data_template + f"JSON Template: {prompt}\nOutput:"
-    reflection_response = get_config_response(reflection_prompt)
+    reflection_response = clean_extra_symbols(get_config_response(reflection_prompt), prefix='Output')
 
     # push back to db
     
