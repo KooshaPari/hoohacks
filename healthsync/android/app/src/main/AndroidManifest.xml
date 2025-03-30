@@ -48,7 +48,8 @@
         <intent>
             <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
         </intent>
-        <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
-        <uses-permission android:name="android.permission.BODY_SENSORS"/>
     </queries>
+    <!-- Permissions for Health Connect -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="android.permission.BODY_SENSORS"/>
 </manifest>

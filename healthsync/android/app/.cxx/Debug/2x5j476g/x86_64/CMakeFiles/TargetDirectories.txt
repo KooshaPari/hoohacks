@@ -1,0 +1,2 @@
+/Users/kooshapari/temp-PRODVERCEL/hoohacks/new/smey2/hoohacks/healthsync/android/app/.cxx/Debug/2x5j476g/x86_64/CMakeFiles/edit_cache.dir
+/Users/kooshapari/temp-PRODVERCEL/hoohacks/new/smey2/hoohacks/healthsync/android/app/.cxx/Debug/2x5j476g/x86_64/CMakeFiles/rebuild_cache.dir
