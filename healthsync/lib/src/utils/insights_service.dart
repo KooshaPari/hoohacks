@@ -50,7 +50,7 @@ class HealthInsight {
 class InsightsService {
   // --- Configuration ---
   // IMPORTANT: Replace YOUR_LOCAL_IP with your actual local network IP
-  static const String _backendBaseUrl = 'http://10.142.40.109:5001';
+  static const String _backendBaseUrl = 'http://10.142.40.109:5001'; // Example IP, ensure it's correct
   static final String? _geminiApiKey = dotenv.env['GEMINI_API_KEY'];
   // --- End Configuration ---
 
@@ -85,10 +85,11 @@ class InsightsService {
     }
   }
 
-  // Helper to generate insights using Gemini
+  // Helper to generate insights using Gemini - NOW ACCEPTS STRINGS
   Future<List<String>> _generateInsightsFromData(
-      List<Map<String, dynamic>> journalEntries,
-      Map<weekly_summary.HealthData, List<double>> healthKitData) async {
+      String journalEntriesString, // Changed parameter
+      String healthKitDataString   // Changed parameter
+      ) async {
 
     if (_geminiApiKey == null) {
       print('Error: GEMINI_API_KEY not found in .env file.');
@@ -96,39 +97,19 @@ class InsightsService {
     }
 
     // Initialize Gemini AI Model
-    final model = GenerativeModel(model: 'gemini-pro', apiKey: _geminiApiKey!);
+    // Note: Using 'gemini-1.5-flash-latest' as 'gemini-pro' caused errors.
+    final model = GenerativeModel(model: 'gemini-1.5-flash-latest', apiKey: _geminiApiKey!);
 
     // --- Construct the Prompt ---
-    // 1. Format Journal Entries
-    String formattedJournalEntries = "Recent Journal Entries:\n";
-    if (journalEntries.isEmpty) {
-      formattedJournalEntries += "No journal entries found for the selected period.\n";
-    } else {
-      for (var entry in journalEntries) {
-         // Safely access fields with null checks or defaults
-         String timestamp = entry['timestamp'] != null ? DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(entry['timestamp'])) : 'N/A';
-         String mood = entry['mood'] ?? 'N/A';
-         int energy = entry['energyLevel'] ?? 0;
-         String symptoms = (entry['symptoms'] as List?)?.map((s) => "${s['symptom']} (Severity: ${s['severity']})").join(', ') ?? 'None';
-         String notes = entry['notes'] ?? 'N/A';
-         formattedJournalEntries += "- Date: $timestamp, Mood: $mood, Energy: ${energy.toString()}/10, Symptoms: $symptoms, Notes: $notes\n"; // Fixed: Added .toString() to energy
-      }
-    }
-
-    // 2. Format HealthKit Data (using the hardcoded data for now)
-    String formattedHealthKitData = "\nWeekly Health Data Summary:\n";
-    healthKitData.forEach((key, values) {
-      String keyName = key.toString().split('.').last; // e.g., "sleep"
-      String avgValue = (values.reduce((a, b) => a + b) / values.length).toStringAsFixed(1);
-      formattedHealthKitData += "- Average ${keyName.replaceAllMapped(RegExp(r'[A-Z]'), (match) => ' ${match.group(0)}').toLowerCase()}: $avgValue\n"; // Format name nicely
-    });
-
-    // 3. Define the Task for Gemini
+    // Use the pre-formatted strings directly
     String prompt = """
 Analyze the following health data and journal entries for the past week. Provide exactly 3 concise, actionable, one-line recommendations based on potential patterns, correlations, or areas for improvement. Focus on practical advice.
 
-${formattedJournalEntries}
-${formattedHealthKitData}
+Recent Journal Entries:
+${journalEntriesString.isEmpty ? "No journal entries found for the selected period." : journalEntriesString}
+
+Weekly Health Data Summary:
+${healthKitDataString.isEmpty ? "No health data found for the selected period." : healthKitDataString}
 
 Recommendations:
 1.
@@ -192,14 +173,52 @@ Recommendations:
       final journalEntries = await _fetchJournalEntries(startDate, endDate);
 
       // 3. Get HealthKit data (using the global variable from weekly_summary.dart)
-      // In a real app, this would likely be fetched dynamically or passed as a parameter
       final healthKitData = weekly_summary.healthData;
 
-      // 4. Generate insights using Gemini
-      final recommendations = await _generateInsightsFromData(journalEntries, healthKitData);
+      // --- Format Data into Strings ---
+      String journalEntriesString = "";
+      try {
+        // Use jsonEncode for a robust string representation of the list of maps
+        journalEntriesString = jsonEncode(journalEntries);
+      } catch (e) {
+        print("Could not JSON encode journal entries for prompt: $e");
+        journalEntriesString = "Error encoding journal entries."; // Provide fallback
+      }
+
+      String healthKitDataString = "";
+      try {
+          StringBuffer healthBuffer = StringBuffer();
+          healthKitData.forEach((key, values) {
+            String keyName = key.toString().split('.').last;
+            // Basic check for non-empty list before reducing
+            if (values.isNotEmpty) {
+               String avgValue = (values.reduce((a, b) => a + b) / values.length).toStringAsFixed(1);
+               healthBuffer.writeln("- Average ${keyName.replaceAllMapped(RegExp(r'[A-Z]'), (match) => ' ${match.group(0)}').toLowerCase()}: $avgValue");
+            } else {
+               healthBuffer.writeln("- Average ${keyName.replaceAllMapped(RegExp(r'[A-Z]'), (match) => ' ${match.group(0)}').toLowerCase()}: N/A (no data)");
+            }
+          });
+          healthKitDataString = healthBuffer.toString();
+      } catch (e) {
+          print("Could not format HealthKit data for prompt: $e");
+          healthKitDataString = "Error formatting HealthKit data."; // Provide fallback
+      }
+
+      // --- Logging the formatted strings ---
+      print("--- Data Strings for Gemini ---");
+      print("Journal Entries String:\n$journalEntriesString");
+      print("\nHealthKit Data String:\n$healthKitDataString");
+      print("-----------------------------");
+      // --- End Logging ---
+
+
+      // 4. Generate insights using Gemini - PASSING STRINGS
+      final recommendations = await _generateInsightsFromData(
+          journalEntriesString,
+          healthKitDataString
+      );
 
       // 5. Return the result
-      // Using a generic summary as recommendations are the main output now
       return HealthInsight(summary: "Here are your weekly insights:", recommendations: recommendations);
 
     } catch (e) {
