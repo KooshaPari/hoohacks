@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' if (dart.library.html) 'dart:html' as html;
+import 'package:web/web.dart' as web;
 import 'package:healthsync/src/models/user_model.dart';
 import 'package:healthsync/src/services/user_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -306,7 +306,7 @@ class AuthService {
 
       // Call Auth0 logout
       if (kIsWeb && auth0Web != null) {
-        await auth0Web!.logout(returnToUrl: html.window.location.origin);
+        await auth0Web!.logout(returnToUrl: web.window.location.origin);
       } else {
         await auth0.webAuthentication(scheme: scheme).logout();
       }

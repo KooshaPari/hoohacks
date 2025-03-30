@@ -4,7 +4,7 @@ import 'package:auth0_flutter/auth0_flutter_web.dart'; // Import web version exp
 import 'package:flutter/foundation.dart' show kIsWeb;
 // Web imports - only for web platform
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:js' as js;
+// import 'dart:js' as js; // Removed problematic import
 import 'package:flutter/material.dart';
 import 'package:healthsync/main.dart' show NavBarController, auth0, auth0Scheme; // Import native instance and scheme from main.dart
 import 'package:healthsync/src/models/user_model.dart';
