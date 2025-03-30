@@ -49,8 +49,6 @@ android {
 
         // Add the following manifest placeholders for Auth0 Flutter SDK and application name
         manifestPlaceholders = [
-                auth0Domain: "dev-a01zqddvyzlcd8j4.us.auth0.com",
-                auth0Scheme: "com.phenotype.healthsync",
                 applicationName: "io.flutter.app.FlutterApplication" // Add this line
         ]
     }

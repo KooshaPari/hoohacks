@@ -27,13 +27,52 @@
   <meta name="apple-mobile-web-app-title" content="healthsync">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
+  <!-- Firebase SDKs - Updated to use compat versions -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  
   <!-- Auth0 SPA JS - Load synchronously to ensure it's available -->
   <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
   
-  <!-- Ensure script loading is complete before Flutter initialization -->
+  <!-- Initialize Firebase -->
   <script>
-    // Simple script to ensure Auth0 is loaded
-    console.log('Auth0 SPA JS loaded');
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvMuc_W40_GG75KCSO5nau2LbBXpiBSgE",
+      authDomain: "healthsync-4ca6a.firebaseapp.com",
+      projectId: "healthsync-4ca6a",
+      storageBucket: "healthsync-4ca6a.appspot.com",
+      messagingSenderId: "94952939819",
+      appId: "1:94952939819:web:82a2e66b152b893ba8256e"
+    };
+    
+    // Initialize Firebase immediately - this helps avoid timing issues
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        console.log('Firebase initialized successfully from index.html');
+      } catch (e) {
+        console.error('Error initializing Firebase:', e);
+      }
+    } else {
+      console.warn('Firebase is not available, will be initialized by Flutter');
+    }
+    
+    // Also initialize on DOMContentLoaded as a fallback
+    document.addEventListener('DOMContentLoaded', function() {
+      // Ensure Auth0 is loaded
+      console.log('Auth0 SPA JS loaded');
+      
+      // Try initializing Firebase again if it wasn't available earlier
+      if (typeof firebase !== 'undefined' && !firebase.apps?.length) {
+        try {
+          firebase.initializeApp(firebaseConfig);
+          console.log('Firebase initialized successfully in DOMContentLoaded event');
+        } catch (e) {
+          console.error('Error initializing Firebase in DOMContentLoaded event:', e);
+        }
+      }
+    });
   </script>
 
   <!-- Favicon -->

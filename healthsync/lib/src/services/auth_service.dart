@@ -1,330 +1,285 @@
-import 'dart:convert';
-import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:auth0_flutter/auth0_flutter_web.dart';
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart'; // Use alias to avoid conflict with our User model
+import 'package:firebase_core/firebase_core.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/foundation.dart' show kIsWeb;
-// Removed web import - it's not compatible with iOS/Android
-// import 'package:web/web.dart' as web;
-import 'package:healthsync/src/models/user_model.dart';
+import 'package:healthsync/src/models/user_model.dart'
+    as AppUser; // Use alias for our User model
 import 'package:healthsync/src/services/user_service.dart';
-import 'package:healthsync/src/utils/platform_url_helper.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:healthsync/firebase_options.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
 
-  // Constants
-  static const String domain = 'dev-a01zqddvyzlcd8j4.us.auth0.com';
-  static const String clientId = 'aFy0NakvJVNFbWPpPwjkd0QfRmKPPajc';
-  static const String scheme = 'com.phenotype.healthsync';
-
-  // Auth0 instances
-  final Auth0 auth0 = Auth0(domain, clientId);
-  Auth0Web? auth0Web;
-
-  // Secure storage
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
-
-  // User service
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb
+        ? '94952939819-26an9b70qdga02rha7d3tsf9mavv35tr.apps.googleusercontent.com'
+        : null,
+    scopes: ['email', 'profile'],
+  );
   final UserService _userService = UserService();
 
+  // Stream for authentication state changes
+  Stream<AppUser.User?> get authStateChanges =>
+      _firebaseAuth.authStateChanges().asyncMap(_mapFirebaseUserToAppUser);
+
   // Current user state
-  User? _currentUser;
-  Credentials? _credentials;
+  AppUser.User? _currentUser;
+  AppUser.User? get currentUser => _currentUser;
 
-  AuthService._internal() {
-    if (kIsWeb) {
-      auth0Web = Auth0Web(domain, clientId);
-    }
-  }
+  bool get isAuthenticated =>
+      _firebaseAuth.currentUser != null && _currentUser != null;
 
-  // Initialize and check existing credentials
-  Future<void> initialize() async {
+  AuthService._internal();
+
+  // Initialize Firebase (call this from main.dart)
+  static Future<void> initializeFirebase() async {
+    print('Initializing Firebase...');
     try {
-      print('Initializing AuthService...');
-      
-      // Initialize Auth0Web instance if on Web
-      if (kIsWeb) {
-        auth0Web = Auth0Web(domain, clientId);
-        print('Auth0Web initialized for web platform');
-      }
-      
-      // Try to load persisted credentials
-      final String? credentialsJson =
-          await _storage.read(key: 'auth0_credentials');
-
-      if (credentialsJson != null) {
-        print('Found stored credentials, attempting to restore session');
-        // Try to parse stored credentials
-        Map<String, dynamic> credentialsMap = jsonDecode(credentialsJson);
-
-        // Extract user information
-        final String? sub = credentialsMap['sub'] ??
-            (credentialsMap['user'] != null
-                ? credentialsMap['user']['sub']
-                : null);
-        
-        if (sub != null) {
-          print('User ID found in stored credentials: $sub');
-          // Fetch the user from the database
-          await _getUserFromDb(sub);
-        }
+      // Check if Firebase is already initialized to prevent duplicate app error
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+        print('Firebase initialized successfully.');
       } else {
-        print('No stored credentials found');
+        print('Firebase already initialized, using existing app.');
+        // Get the existing app instance
+        Firebase.app();
       }
     } catch (e) {
-      print('Error initializing AuthService: $e');
-      // Clear possibly corrupted credentials and any other stored auth data
-      await _storage.deleteAll(); // Clear all secure storage for this app
-      _currentUser = null; // Ensure local state is also cleared
-      _credentials = null;
-      // Avoid calling logout() here as it might trigger web redirects if already in a bad state
-    }
-  }
-
-  // Login with specified connection (provider)
-  Future<User?> login(String connection) async {
-    try {
-      if (kIsWeb && auth0Web != null) {
-        // Web login with redirect flow
-        await auth0Web!.loginWithRedirect(
-            redirectUrl: PlatformUrlHelper.getBaseUrl(),
-            parameters: {'connection': connection});
-        // User will be processed after redirect in handleRedirectCallback
-        return null;
-      } else {
-        // Native login
-        final credentials = await auth0
-            .webAuthentication(scheme: scheme)
-            .login(parameters: {'connection': connection});
-
-        return await processAuthentication(credentials);
-      }
-    } catch (e) {
-      print('Login error: $e');
+      print('Error initializing Firebase: $e');
+      // Handle initialization error appropriately
       rethrow;
     }
   }
 
-  // Handle redirect callback for web auth
-  Future<User?> handleRedirectCallback() async {
-    if (!kIsWeb || auth0Web == null) return null;
-
-    try {
-      // Add debug log
-      print('Attempting to handle Auth0 redirect callback...');
-      final credentials = await auth0Web!.onLoad();
-      print('Auth0 redirect callback result: ${credentials != null ? 'Success' : 'No credentials found'}');
-      
-      if (credentials != null) {
-        return await processAuthentication(credentials);
-      }
-    } catch (e) {
-      print('Error handling redirect: $e');
-      rethrow;
-    }
-    return null;
-  }
-
-  // Process authentication after successful login - public for login page
-  Future<User?> processAuthentication(Credentials credentials) async {
-    _credentials = credentials;
-
-    // Save credentials securely
-    try {
-      await _storage.write(
-        key: 'auth0_credentials',
-        value: jsonEncode({
-          'access_token': credentials.accessToken,
-          'id_token': credentials.idToken,
-          'refresh_token': credentials.refreshToken,
-          'expires_at': credentials.expiresAt.millisecondsSinceEpoch,
-          'sub': credentials.user.sub,
-          // Explicitly create the user map, ensuring all values are JSON encodable
-          'user': {
-            'sub': credentials.user.sub ?? '', // Ensure sub is string or empty
-            'name': credentials.user.name ?? '', // Ensure name is string or empty
-            'email': credentials.user.email ?? '', // Ensure email is string or empty
-            'picture': credentials.user.pictureUrl?.toString() ?? '', // Ensure picture is string or empty
-          }
-        }),
-      );
-      print('Auth0 credentials saved securely');
-    } catch (e) {
-      print('Error saving credentials: $e');
-      // Continue even if storage fails - this is not critical
-    }
-
-    try {
-      // Try to create or get user in the database
-      print('Attempting to create or get user in database');
-      final user = await _createOrGetUser(credentials);
-      if (user != null) {
-        print('User successfully retrieved/created in database: ${user.email}');
-        return user;
-      }
-    } catch (e) {
-      print('Error creating/getting user in database: $e');
-    }
-    
-    // If we get here, either the database connection failed or user creation failed
-    // Create a fallback user from Auth0 credentials to allow the app to function
-    print('Using fallback user creation from Auth0 credentials');
-    return await _createFallbackUser(credentials);
-  }
-  
-  // Create a fallback user from Auth0 credentials when backend is unavailable
-  Future<User?> _createFallbackUser(Credentials credentials) async {
-    try {
-      final auth0User = credentials.user;
-      final userEmail = auth0User.email;
-      
-      // If no email is available, we can't create a valid user
-      if (userEmail == null || userEmail.isEmpty) {
-        print('Error: No email provided by authentication provider');
-        return null;
-      }
-      
-      // Extract provider from sub field (e.g., 'google-oauth2|123456')
-      String provider = 'unknown';
-      if (auth0User.sub.contains('|')) {
-        provider = auth0User.sub.split('|')[0];
-      }
-      
-      // Create a local user object
-      print('Creating fallback user for: $userEmail');
-      return User(
-        id: auth0User.sub ?? '', // Use sub as ID for fallback
-        email: userEmail,
-        name: auth0User.name,
-        authProvider: provider,
-        authProviderData: {
-          'sub': auth0User.sub ?? '',
-          'name': auth0User.name ?? '',
-          'email': userEmail,
-          'picture': auth0User.pictureUrl?.toString() ?? '',
-        },
-        hasHealthkitConsent: false,
-        hasGoogleFitConsent: false,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-    } catch (e) {
-      print('Error creating fallback user: $e');
-      return null;
-    }
-  }
-
-  // Create or get user in the database
-  Future<User?> _createOrGetUser(Credentials credentials) async {
-    final auth0User = credentials.user;
-    // Ensure pictureUrl is converted to string here as well
-    final providerData = {
-      'sub': auth0User.sub ?? '',
-      'name': auth0User.name ?? '',
-      'email': auth0User.email ?? '',
-      'picture': auth0User.pictureUrl?.toString() ?? '', // Convert Uri to String or empty
-      // Add other metadata from user object
-    };
-
-    // Extract the provider from sub field (e.g., 'google-oauth2|123456')
-    String provider = 'unknown';
-    if (auth0User.sub.contains('|')) {
-      provider = auth0User.sub.split('|')[0];
-    }
-
-    // Make sure we have an email
-    final userEmail = auth0User.email ?? '';
-    if (userEmail.isEmpty) {
-      print('Error: No email provided by authentication provider');
+  // Map Firebase User to our AppUser model
+  Future<AppUser.User?> _mapFirebaseUserToAppUser(User? firebaseUser) async {
+    if (firebaseUser == null) {
+      _currentUser = null;
       return null;
     }
 
     try {
-      // Try to get existing user first
-      final existingUser = await _userService.getUserByEmail(userEmail);
+      // Try to get user from our DB
+      AppUser.User? appUser =
+          await _userService.getUserByFirebaseUid(firebaseUser.uid);
 
-      if (existingUser != null) {
-        // Update existing user with new auth provider data
-        _currentUser = await _userService.updateUser(
-            existingUser.id,
-            existingUser.copyWith(
-              authProvider: provider,
-              authProviderData: providerData,
-              updatedAt: DateTime.now(),
-            ));
-        return _currentUser;
-      } else {
-        // Create new user
-        final newUser = User(
-          id: '', // ID will be assigned by database
-          email: userEmail,
-          name: auth0User.name,
-          authProvider: provider,
-          authProviderData: providerData,
-          hasHealthkitConsent: false,
+      if (appUser == null) {
+        // If user doesn't exist in our DB, create them
+        print('User not found in DB, creating new user entry...');
+        final newUser = AppUser.User(
+          id: '', // DB will assign ID
+          firebaseUid: firebaseUser.uid,
+          email: firebaseUser.email ?? '',
+          name: firebaseUser.displayName,
+          authProvider: firebaseUser.providerData.isNotEmpty
+              ? firebaseUser.providerData[0].providerId
+              : 'firebase',
+          authProviderData: {
+            // Store basic Firebase user info
+            'uid': firebaseUser.uid,
+            'email': firebaseUser.email,
+            'displayName': firebaseUser.displayName,
+            'photoURL': firebaseUser.photoURL,
+          },
+          hasHealthkitConsent: false, // Default values
           hasGoogleFitConsent: false,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-
-        _currentUser = await _userService.createUser(newUser);
-        return _currentUser;
-      }
-    } catch (e, stackTrace) {
-      // Add stackTrace parameter
-      // Log the specific error and stack trace for better debugging
-      print('Error creating/getting user in _createOrGetUser: $e');
-      print('Stack trace: $stackTrace');
-      return null;
-    }
-  }
-
-  // Get user from database by ID
-  Future<User?> _getUserFromDb(String? auth0UserId) async {
-    if (auth0UserId == null) return null;
-
-    try {
-      final user = await _userService.getUserByAuth0Id(auth0UserId);
-      if (user != null) {
-        _currentUser = user;
-      }
-      return user;
-    } catch (e) {
-      print('Error getting user from database: $e');
-      return null;
-    }
-  }
-
-  // Logout user
-  Future<void> logout() async {
-    try {
-      // Clear local state
-      _currentUser = null;
-      _credentials = null;
-
-      // Clear stored credentials
-      await _storage.delete(key: 'auth0_credentials');
-
-      // Call Auth0 logout
-      if (kIsWeb && auth0Web != null) {
-        // Use our platform helper for the return URL
-        await auth0Web!.logout(returnToUrl: PlatformUrlHelper.getOrigin());
+        appUser = await _userService.createUser(newUser);
+        print('New user created in DB: ${appUser?.email}');
       } else {
-        await auth0.webAuthentication(scheme: scheme).logout();
+        // Optionally update user data from Firebase if needed
+        // Example: Check if name or photoURL changed
+        bool needsUpdate = false;
+        Map<String, dynamic> updates = {};
+        if (appUser.name != firebaseUser.displayName) {
+          updates['name'] = firebaseUser.displayName;
+          needsUpdate = true;
+        }
+        // Add more checks if necessary
+
+        if (needsUpdate) {
+          print('Updating existing user data from Firebase...');
+          appUser = await _userService.updateUser(
+              appUser.id,
+              appUser.copyWith(
+                name: firebaseUser.displayName, // Example update
+                updatedAt: DateTime.now(),
+              ));
+          print('User data updated.');
+        }
       }
+
+      _currentUser = appUser;
+      return _currentUser;
     } catch (e) {
-      print('Logout error: $e');
+      print('Error mapping Firebase user to AppUser: $e');
+      _currentUser = null; // Ensure state is cleared on error
+      return null;
+    }
+  }
+
+  // Sign in with Google
+  Future<AppUser.User?> signInWithGoogle() async {
+    try {
+      print('Starting Google Sign-In flow...');
+      GoogleSignInAccount? googleUser;
+
+      if (kIsWeb) {
+        try {
+          // For web, use Firebase's Google auth provider directly
+          GoogleAuthProvider googleProvider = GoogleAuthProvider();
+          googleProvider.addScope('email');
+          googleProvider.addScope('profile');
+          
+          // Sign in with popup or redirect
+          UserCredential userCredential = await _firebaseAuth.signInWithPopup(googleProvider);
+          print('Web Google Sign-In successful');
+          
+          // Map to our user model
+          return await _mapFirebaseUserToAppUser(userCredential.user);
+        } catch (e) {
+          print('Web Google Sign-In failed, falling back to plugin: $e');
+          // Try the plugin as fallback
+          googleUser = await _googleSignIn.signIn();
+        }
+      } else {
+        // Mobile flow
+        googleUser = await _googleSignIn.signIn();
+      }
+
+      if (googleUser == null) {
+        print('Google Sign-In cancelled by user.');
+        return null; // User cancelled
+      }
+      print('Google Sign-In successful, obtaining auth details...');
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Create a Firebase credential
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      print('Signing in to Firebase with Google credential...');
+      // Sign in to Firebase with the credential
+      final UserCredential userCredential =
+          await _firebaseAuth.signInWithCredential(credential);
+      print('Firebase sign-in with Google successful.');
+
+      // Map Firebase user to our app user model (handles DB interaction)
+      return await _mapFirebaseUserToAppUser(userCredential.user);
+    } catch (e) {
+      print('Error during Google Sign-In: $e');
+      // Handle specific errors (e.g., platform exceptions) if necessary
+      return null;
+    }
+  }
+
+  // Sign in with Apple
+  Future<AppUser.User?> signInWithApple() async {
+    // Apple Sign-In is only supported on iOS and macOS
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.iOS &&
+            defaultTargetPlatform != TargetPlatform.macOS)) {
+      print('Apple Sign-In is only available on iOS and macOS.');
+      throw UnsupportedError(
+          'Apple Sign-In is only available on iOS and macOS.');
+    }
+
+    try {
+      print('Starting Apple Sign-In flow...');
+      final AuthorizationCredentialAppleID appleCredential =
+          await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId:
+              'com.phenotype.healthsyncservice', // e.g., com.yourcompany.web
+          redirectUri: Uri.parse(
+            'https://dev-a01zqddvyzlcd8j4.us.auth0.com/.well-known/apple-app-site-association',
+          ),
+        ),
+      );
+      print('Apple Sign-In successful, obtaining Firebase credential...');
+
+      // Create an OAuthProvider credential
+      final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
+      final AuthCredential credential = oAuthProvider.credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential
+            .authorizationCode, // Or accessToken if available/needed
+      );
+
+      print('Signing in to Firebase with Apple credential...');
+      // Sign in to Firebase
+      final UserCredential userCredential =
+          await _firebaseAuth.signInWithCredential(credential);
+      print('Firebase sign-in with Apple successful.');
+
+      // Map Firebase user to our app user model (handles DB interaction)
+      // Note: Apple might only provide name/email on the *first* sign-in.
+      // You might need to update the user profile separately if needed.
+      return await _mapFirebaseUserToAppUser(userCredential.user);
+    } catch (e) {
+      print('Error during Apple Sign-In: $e');
+      // Handle specific errors (e.g., user cancellation)
+      return null;
+    }
+  }
+
+  // Sign out
+  Future<void> signOut() async {
+    try {
+      print('Signing out...');
+      // Sign out from Firebase
+      await _firebaseAuth.signOut();
+      print('Signed out from Firebase.');
+
+      // Sign out from Google (important to allow account switching)
+      try {
+        if (await _googleSignIn.isSignedIn()) {
+          await _googleSignIn.signOut();
+          print('Signed out from Google.');
+        }
+      } catch (e) {
+        print('Error signing out from Google: $e');
+        // Ignore error, might not have been signed in with Google
+      }
+
+      // No explicit sign out needed for Sign in with Apple using this method
+
+      _currentUser = null; // Clear local user state
+      print('Sign out complete.');
+    } catch (e) {
+      print('Error during sign out: $e');
       rethrow;
     }
   }
 
-  // Update health consent for the current user
-  Future<User?> updateHealthConsent(
+  // Update health consent (example of interacting with AppUser)
+  Future<AppUser.User?> updateHealthConsent(
       {bool? hasHealthkitConsent, bool? hasGoogleFitConsent}) async {
-    if (_currentUser == null) return null;
+    if (_currentUser == null) {
+      print('Cannot update consent, no user logged in.');
+      return null;
+    }
 
     try {
+      print('Updating health consent for user: ${_currentUser!.email}');
       _currentUser = await _userService.updateUser(
           _currentUser!.id,
           _currentUser!.copyWith(
@@ -334,6 +289,7 @@ class AuthService {
                 hasGoogleFitConsent ?? _currentUser!.hasGoogleFitConsent,
             updatedAt: DateTime.now(),
           ));
+      print('Health consent updated successfully.');
       return _currentUser;
     } catch (e) {
       print('Error updating health consent: $e');
@@ -341,12 +297,15 @@ class AuthService {
     }
   }
 
-  // Check if user is authenticated
-  bool get isAuthenticated => _credentials != null && _currentUser != null;
-
-  // Get current user
-  User? get currentUser => _currentUser;
-
-  // Get access token
-  String? get accessToken => _credentials?.accessToken;
+  // Get current Firebase user's ID token (useful for backend verification)
+  Future<String?> getIdToken() async {
+    final firebaseUser = _firebaseAuth.currentUser;
+    if (firebaseUser == null) return null;
+    try {
+      return await firebaseUser.getIdToken();
+    } catch (e) {
+      print('Error getting ID token: $e');
+      return null;
+    }
+  }
 }

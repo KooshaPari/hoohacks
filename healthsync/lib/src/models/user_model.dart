@@ -1,5 +1,6 @@
 class User {
   final String id;
+  final String? firebaseUid; // Added for Firebase Auth
   final String? name;
   final String email;
   final String? dob;
@@ -12,6 +13,7 @@ class User {
 
   User({
     required this.id,
+    this.firebaseUid,
     this.name,
     required this.email,
     this.dob,
@@ -27,6 +29,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['_id'] ?? json['id'],
+      firebaseUid: json['firebaseUid'],
       name: json['name'],
       email: json['email'],
       dob: json['dob'],
@@ -47,6 +50,7 @@ class User {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'firebaseUid': firebaseUid,
       'name': name,
       'email': email,
       'dob': dob,
@@ -62,6 +66,7 @@ class User {
   // Create a copy with updated fields
   User copyWith({
     String? id,
+    String? firebaseUid,
     String? name,
     String? email,
     String? dob,
@@ -74,6 +79,7 @@ class User {
   }) {
     return User(
       id: id ?? this.id,
+      firebaseUid: firebaseUid ?? this.firebaseUid,
       name: name ?? this.name,
       email: email ?? this.email,
       dob: dob ?? this.dob,

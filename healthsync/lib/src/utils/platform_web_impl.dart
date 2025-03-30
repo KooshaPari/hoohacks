@@ -1,6 +1,5 @@
 // lib/src/utils/platform_web_impl.dart
 // This file will only be imported in web context
-import 'dart:html';
 import 'platform_interface.dart';
 import 'platform_web.dart';
 

@@ -138,6 +138,43 @@ class UserService {
     }
   }
 
+  // Get user by Firebase UID
+  Future<User?> getUserByFirebaseUid(String firebaseUid) async {
+    if (firebaseUid.isEmpty) return null;
+
+    final client = _createClient();
+    try {
+      print('Looking up user by Firebase UID: $firebaseUid');
+
+      // TODO: Ensure backend endpoint /users/firebase/:uid exists
+      final response = await _timeoutSafeRequest(
+        client.get(
+          Uri.parse('$apiBaseUrl/users/firebase/$firebaseUid'),
+          headers: {'Content-Type': 'application/json'},
+        )
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('User found by Firebase UID in database');
+        return User.fromJson(data);
+      } else if (response.statusCode == 404) {
+        // User not found, which is a valid scenario
+        print('User not found by Firebase UID in database');
+        return null;
+      } else {
+        print('Error getting user by Firebase UID: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Network error getting user by Firebase UID: $e');
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
+
   // Update existing user
   Future<User?> updateUser(String userId, User updatedUser) async {
     try {
