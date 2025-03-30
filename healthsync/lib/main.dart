@@ -6,10 +6,29 @@ import 'package:healthsync/src/pages/homepage.dart';
 import 'package:healthsync/src/pages/weekly_summary.dart';
 import 'package:healthsync/src/pages/settings_page.dart';
 import 'package:healthsync/src/pages/entry_page.dart';
+import 'package:healthsync/src/utils/health_utils.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await configureHealth();
   runApp(const MyApp());
 }
+
+/*
+Probably will have user data look something like this:
+
+final Map<String, dynamic> userData = {
+  'mood': 3,
+  'energyLevel': 3,
+  'steps': 0,
+  'calories': 0,
+  'heartRate': 0,
+  'sleep': 0,
+  'symptoms': [],
+  'notes': '',
+  'tags': [],
+};
+*/
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -18,7 +37,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'HealthSync',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

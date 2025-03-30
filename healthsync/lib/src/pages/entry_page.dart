@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:healthsync/src/utils/health_utils.dart';
 
 class EntryPage extends StatefulWidget {
   const EntryPage({super.key});
@@ -160,6 +161,7 @@ class _EntryPageState extends State<EntryPage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Entry submitted')),
                       );
+                      fetchHealthData();
                     }
                   },
                   child: const Text('Submit'),
