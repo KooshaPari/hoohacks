@@ -81,12 +81,27 @@ def add_entry():
              print(f"Error parsing date/time: {e}, received date='{data.get('date')}', time='{data.get('time')}'")
              return jsonify({"error": f"Invalid date or time format. Received date='{data.get('date')}', time='{data.get('time')}'"}), 400
 
+        # Validate symptoms format (should be a list of {'symptom': str, 'severity': int})
+        symptoms_data = data.get('symptoms')
+        if not isinstance(symptoms_data, list):
+            return jsonify({"error": "Invalid format for 'symptoms'. Expected a list."}), 400
+
+        for item in symptoms_data:
+            if not isinstance(item, dict):
+                return jsonify({"error": "Invalid item in 'symptoms' list. Expected a dictionary."}), 400
+            if not all(k in item for k in ('symptom', 'severity')):
+                return jsonify({"error": "Missing 'symptom' or 'severity' in symptoms item."}), 400
+            if not isinstance(item.get('symptom'), str) or not item.get('symptom').strip():
+                return jsonify({"error": "Invalid 'symptom' value. Expected a non-empty string."}), 400
+            severity = item.get('severity')
+            if not isinstance(severity, int) or not (1 <= severity <= 10):
+                return jsonify({"error": f"Invalid 'severity' value ({severity}) for symptom '{item.get('symptom')}'. Expected an integer between 1 and 10."}), 400
 
         # Prepare data for MongoDB insertion
         entry_to_insert = {
             "mood": data.get('mood'),
             "energyLevel": data.get('energyLevel'),
-            "symptoms": data.get('symptoms'), # Store as string for now
+            "symptoms": symptoms_data, # Store the validated list of symptoms
             "notes": data.get('notes'),
             "tags": [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()], # Split tags into a list
             "timestamp": timestamp, # Store combined datetime object

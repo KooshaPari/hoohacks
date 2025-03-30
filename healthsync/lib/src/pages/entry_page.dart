@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:healthsync/src/utils/health_utils.dart';
 import 'package:http/http.dart' as http; // HTTP package
 import 'package:intl/intl.dart'; // For date/time formatting
+import 'dart:developer' as developer; // For logging
 
 // --- Configuration ---
 // IMPORTANT: Replace '10.0.2.2' with your computer's actual local IP address
@@ -29,13 +30,23 @@ Map<String, dynamic> entryData = {
   'date': DateTime.now(),
   'time': TimeOfDay.now(),
 };
-
 class _EntryPageState extends State<EntryPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
+  bool _noSymptoms = false; // State variable for the checkbox
 
+  @override
+  void dispose() {
+    // Dispose controllers when the widget is removed from the widget tree
+    _symptomsController.dispose();
+    _notesController.dispose();
+    _tagsController.dispose();
+    super.dispose();
+  }
+
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,17 +126,58 @@ class _EntryPageState extends State<EntryPage> {
                 ],
               ),
               const SizedBox(height: 16),
+              CheckboxListTile(
+                title: const Text("I have no symptoms today"),
+                value: _noSymptoms,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _noSymptoms = value ?? false;
+                    if (_noSymptoms) {
+                      _symptomsController.clear(); // Clear symptoms if checkbox is checked
+                      // Optionally, trigger validation again if needed, though clearing might suffice
+                      _formKey.currentState?.validate();
+                    }
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading, // Checkbox on the left
+              ),
               TextFormField(
                 controller: _symptomsController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter symptoms following this format - Headache:7, Fatigue:5',
-                  border: OutlineInputBorder(),
+                enabled: !_noSymptoms, // Disable field if checkbox is checked
+                decoration: InputDecoration(
+                  labelText: _noSymptoms ? 'No symptoms entered' : 'Symptoms (e.g., Headache:7, Fatigue:5)',
+                  border: const OutlineInputBorder(),
+                  filled: _noSymptoms, // Visually indicate disabled state
+                  fillColor: _noSymptoms ? Colors.grey[200] : null,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter any symptoms';
+                  if (_noSymptoms) {
+                    return null; // No validation needed if checkbox is checked
                   }
-                  return null;
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter symptoms or check "No symptoms"';
+                  }
+                  // Validation for format: <symptom>:<severity 1-10>, comma-separated
+                  final symptomPairs = value.split(',');
+                  for (var pair in symptomPairs) {
+                    final trimmedPair = pair.trim();
+                    if (trimmedPair.isEmpty) continue; // Allow trailing commas or empty segments
+
+                    final parts = trimmedPair.split(':');
+                    if (parts.length != 2) {
+                      return 'Invalid format: Use "Symptom:Severity" (e.g., "Headache:7")';
+                    }
+                    final symptomName = parts[0].trim();
+                    final severityString = parts[1].trim();
+                    if (symptomName.isEmpty) {
+                       return 'Invalid format: Symptom name cannot be empty';
+                    }
+                    final severity = int.tryParse(severityString);
+                    if (severity == null || severity < 1 || severity > 10) {
+                      return 'Severity must be a number between 1 and 10 (found: "$severityString" for "$symptomName")';
+                    }
+                  }
+                  return null; // Validation passed
                 },
               ),
               const SizedBox(height: 16),
@@ -162,10 +214,11 @@ class _EntryPageState extends State<EntryPage> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
+                    // Validate first
                     if (_formKey.currentState!.validate()) {
                       // Update entryData with latest form values before sending
                       setState(() {
-                        entryData['symptoms'] = _symptomsController.text;
+                        // Symptoms are handled in _submitEntryData based on _noSymptoms
                         entryData['notes'] = _notesController.text;
                         entryData['tags'] = _tagsController.text;
                         // Update date/time just before submission
@@ -200,13 +253,41 @@ class _EntryPageState extends State<EntryPage> {
     // Format TimeOfDay manually (HH:MM) - Ensure leading zeros
     final String formattedTime = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
+    // Prepare symptoms data based on checkbox state
+    dynamic symptomsData;
+    if (_noSymptoms) {
+      symptomsData = []; // Send empty list if no symptoms
+    } else {
+      // Parse the symptoms string into a list of maps
+      final symptomsString = _symptomsController.text;
+      final symptomPairs = symptomsString.split(',');
+      symptomsData = symptomPairs
+          .map((pair) {
+            final trimmedPair = pair.trim();
+            if (trimmedPair.isEmpty) return null; // Handle empty segments
+
+            final parts = trimmedPair.split(':');
+            if (parts.length == 2) {
+              final symptomName = parts[0].trim();
+              final severity = int.tryParse(parts[1].trim());
+              if (symptomName.isNotEmpty && severity != null && severity >= 1 && severity <= 10) {
+                return {'symptom': symptomName, 'severity': severity};
+              }
+            }
+            // Log invalid parts if necessary, but filter them out
+            developer.log('Invalid symptom part ignored: "$trimmedPair"', name: 'EntryPage');
+            return null;
+          })
+          .where((item) => item != null) // Filter out nulls (invalid/empty parts)
+          .toList();
+    }
 
     final body = jsonEncode({
       'mood': entryData['mood'],
       'energyLevel': entryData['energyLevel'],
-      'symptoms': entryData['symptoms'],
+      'symptoms': symptomsData, // Send parsed list or empty list
       'notes': entryData['notes'],
-      'tags': entryData['tags'],
+      'tags': entryData['tags'], // Assuming tags remain a comma-separated string for now
       'date': formattedDate, // Send formatted date string
       'time': formattedTime, // Send formatted time string
     });
