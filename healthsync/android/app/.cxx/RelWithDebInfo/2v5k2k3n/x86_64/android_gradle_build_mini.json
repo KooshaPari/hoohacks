@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/opt/homebrew/Caskroom/flutter/3.29.2/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/kooshapari/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/kooshapari/temp-PRODVERCEL/hoohacks/new/smey2/hoohacks/healthsync/android/app/.cxx/RelWithDebInfo/2v5k2k3n/x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/kooshapari/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/kooshapari/temp-PRODVERCEL/hoohacks/new/smey2/hoohacks/healthsync/android/app/.cxx/RelWithDebInfo/2v5k2k3n/x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
