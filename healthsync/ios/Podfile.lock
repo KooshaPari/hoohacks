@@ -40,10 +40,10 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Auth0: 2876d0c36857422eda9cb580a6cc896c7d14cb36
-  auth0_flutter: eb1c74a8ddbd0a08533e47838a885b39c11b3951
-  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
+  auth0_flutter: f07bdadbe380d8d257af41bd84096d3f69e2a460
+  device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  health: a27e55f6f9682483a8bb8fd280084d025b80b478
+  health: a421b1627a55d3200cc1661cbfbd068439b09938
   JWTDecode: 7dae24cb9bf9b608eae61e5081029ec169bb5527
   SimpleKeychain: 768cf43ae778b1c21816e94dddf01bb8ee96a075
 

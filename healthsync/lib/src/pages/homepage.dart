@@ -4,9 +4,9 @@ import 'package:healthsync/src/components/data_card.dart';
 import 'package:healthsync/src/components/navbar.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+  const HomePage({super.key});
 
-  final String title;
+  // final String title;
 
   @override
   State<HomePage> createState() => _HomePageState();

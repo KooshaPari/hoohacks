@@ -54,7 +54,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginPage(), // Set LoginPage as the initial route
+      //make it the homepage not login
+      home: const NavBarController(email: ''),
     );
   }
 }
@@ -73,7 +74,7 @@ class _NavBarControllerState extends State<NavBarController> {
   // Access email via widget.email
 
   final List<Widget> _pages = [
-    const HomePage(title: 'HealthSync'),
+    const HomePage(),
     const WeeklySummary(),
     const EntryPage(),
   ];
