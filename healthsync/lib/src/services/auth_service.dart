@@ -13,7 +13,7 @@ class AuthService {
   // Constants
   static const String domain = 'dev-a01zqddvyzlcd8j4.us.auth0.com';
   static const String clientId = 'aFy0NakvJVNFbWPpPwjkd0QfRmKPPajc';
-  static const String scheme = 'com.example.healthsync';
+  static const String scheme = 'com.phenotype.healthsync';
   
   // Auth0 instances
   final Auth0 auth0 = Auth0(domain, clientId);
