@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:health/health.dart';
 
 final health = Health();
 
-final healthDataTypes = [
+// Define types for native platforms, web doesn't support health data access
+final List<HealthDataType> healthDataTypes = kIsWeb ? [] : [
   HealthDataType.STEPS,
   HealthDataType.HEART_RATE,
   HealthDataType.SLEEP_IN_BED,
@@ -10,20 +12,29 @@ final healthDataTypes = [
 ];
 
 Future<void> configureHealth() async {
-  await health.configure();
+  if (!kIsWeb) {
+    await health.configure();
+  }
 }
 
 // Request permissions for health data
 Future<void> requestPermissions() async {
-  bool? hasPerms = await health.hasPermissions(healthDataTypes);
+  if (!kIsWeb) {
+    bool? hasPerms = await health.hasPermissions(healthDataTypes);
 
-  if (hasPerms == null || !hasPerms) {
-    await health.requestAuthorization(healthDataTypes);
+    if (hasPerms == null || !hasPerms) {
+      await health.requestAuthorization(healthDataTypes);
+    }
   }
 }
 
 // Fetch total steps for today
 Future<int> getTodaySteps() async {
+  if (kIsWeb) {
+    print("Health data (steps) not available on web.");
+    return 0; // Return default value for web
+  }
+
   await requestPermissions();
 
   DateTime now = DateTime.now();
@@ -40,6 +51,11 @@ Future<int> getTodaySteps() async {
 
 // Fetch health data for the past week
 Future<void> fetchHealthData() async {
+  if (kIsWeb) {
+    print("Health data fetching not available on web.");
+    return; // Exit early for web
+  }
+
   DateTime now = DateTime.now();
   DateTime startDate = now.subtract(const Duration(days: 7));
 
