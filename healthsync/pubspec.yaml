@@ -17,6 +17,8 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   http: ^1.2.1
   intl: ^0.19.0
+  flutter_dotenv: ^5.1.0 # Added for environment variables
+  google_generative_ai: ^0.3.0 # Added for Gemini AI
   # Web package is not compatible with iOS/Android
   # Removed: web: ^1.1.1
 

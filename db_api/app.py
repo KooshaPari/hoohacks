@@ -4,7 +4,8 @@ from flask_cors import CORS # Import CORS
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, time, timedelta
+from bson import ObjectId # Import ObjectId to handle BSON types
 
 # Load environment variables from .env file
 load_dotenv()
@@ -31,6 +32,21 @@ except Exception as e:
     client = None
     entries_collection = None
 # --- End MongoDB Setup ---
+
+# Helper function to serialize MongoDB documents
+def serialize_doc(doc):
+    """Converts MongoDB document to JSON serializable format."""
+    if doc is None:
+        return None
+    serialized = {}
+    for key, value in doc.items():
+        if isinstance(value, ObjectId):
+            serialized[key] = str(value)
+        elif isinstance(value, datetime):
+            serialized[key] = value.isoformat() # Use ISO 8601 format
+        else:
+            serialized[key] = value
+    return serialized
 
 @app.route('/add_entry', methods=['POST'])
 def add_entry():
@@ -113,12 +129,53 @@ def add_entry():
 
         return jsonify({
             "message": "Entry added successfully",
-            "inserted_id": str(result.inserted_id)
+            "inserted_id": str(result.inserted_id) # Convert ObjectId to string
         }), 201
 
     except Exception as e:
         print(f"Error adding entry: {e}")
         return jsonify({"error": "An internal server error occurred"}), 500
+
+@app.route('/get_entries', methods=['GET'])
+def get_entries():
+    if entries_collection is None:
+        return jsonify({"error": "Database connection not established"}), 500
+
+    try:
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return jsonify({"error": "Missing 'start_date' or 'end_date' query parameter"}), 400
+
+        # Parse dates and create datetime objects for the range
+        try:
+            # Start of the start day
+            start_dt = datetime.combine(datetime.strptime(start_date_str, "%Y-%m-%d").date(), time.min)
+            # End of the end day (inclusive)
+            end_dt = datetime.combine(datetime.strptime(end_date_str, "%Y-%m-%d").date(), time.max)
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Please use YYYY-MM-DD"}), 400
+
+        # Query MongoDB for entries within the date range
+        query = {
+            "timestamp": {
+                "$gte": start_dt,
+                "$lte": end_dt
+            }
+        }
+        # Sort by timestamp descending (most recent first) - optional
+        entries_cursor = entries_collection.find(query).sort("timestamp", -1)
+
+        # Serialize results
+        results = [serialize_doc(entry) for entry in entries_cursor]
+
+        return jsonify(results), 200
+
+    except Exception as e:
+        print(f"Error fetching entries: {e}")
+        return jsonify({"error": "An internal server error occurred"}), 500
+
 
 if __name__ == '__main__':
     # Run on 0.0.0.0 to be accessible from the network (e.g., mobile emulator)

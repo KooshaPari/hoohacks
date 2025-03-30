@@ -11,7 +11,9 @@ import 'package:healthsync/src/utils/consent_manager.dart';
 import 'package:healthsync/src/utils/health_utils.dart';
 import 'package:healthsync/src/pages/login_page.dart'; // Import LoginPage
 import 'package:healthsync/src/pages/about_page.dart'; // Import AboutPage
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 import 'src/utils/platform.dart';
+
 // Initialize Auth0 for native platforms
 // Web initialization will happen within LoginPage
 final Auth0 auth0 = Auth0('dev-a01zqddvyzlcd8j4.us.auth0.com', 'aFy0NakvJVNFbWPpPwjkd0QfRmKPPajc');
@@ -19,13 +21,18 @@ final Auth0 auth0 = Auth0('dev-a01zqddvyzlcd8j4.us.auth0.com', 'aFy0NakvJVNFbWPp
 // Define the Android scheme (only needed for native Android)
 const String auth0Scheme = 'com.phenotype.healthsync';
 
-void main() {
+Future<void> main() async { // Make main async
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
   // Get the appropriate platform instance
   final platform = Platform.getInstance();
-  
+
   // Now you can use platform methods safely
   print('Is mobile: ${platform.isMobile()}');
-  
+
   // Rest of your app initialization
   runApp(MyApp());
 }
