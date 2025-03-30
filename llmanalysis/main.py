@@ -10,12 +10,13 @@ from utility import clean_extra_symbols
 
 load_dotenv()
 app = FastAPI()
+# llm="gemini-2.0-flash"
+llm="gemini-2.5-pro-exp-03-25"
 
-def get_api_key():
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable is not set. Please set it to your Gemini API key.")
-    return api_key
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("GEMINI_API_KEY environment variable is not set. Please set it to your Gemini API key.")
+
 
 def get_db():
     mongo_uri = os.getenv("MONGO_URI")
@@ -24,19 +25,20 @@ def get_db():
     return client[db_name]
 
 @app.get("/get_response")
-def get_response(prompt='', model="gemini-2.5-pro-exp-03-25"):
-    client = genai.Client(api_key=get_api_key())
+def get_response(prompt='', model=llm):
+    client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model= model,
         contents=prompt,
         config={
             'temperature': 0,
+            # 'max_output_tokens': 1024,
         },
     )
     return response.text
 
-def get_config_response(prompt='', model="gemini-2.5-pro-exp-03-25"):
-    client = genai.Client(api_key=get_api_key())
+def get_config_response(prompt='', model=llm):
+    client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model= model,
         contents=prompt,
@@ -48,17 +50,16 @@ def get_config_response(prompt='', model="gemini-2.5-pro-exp-03-25"):
     return response.text
 
 @app.get("/get_analysis")
-def llm_analysis(target='', sequence=[]):
-    with open("prompt/analyzeanalysis_prompt.txt", "r", encoding="utf-8") as file:
+def llm_analysis(target='', sequence_str=''):
+    with open("prompt/analyze_prompt.txt", "r", encoding="utf-8") as file:
             analysis_prompt_template = file.read()
-    analysis_prompt = analysis_prompt_template + f"\nTopic: {target}\nList: {', '.join(sequence)}\nOutput:"
+    analysis_prompt = analysis_prompt_template + f"\nTopic: {target}\nList: {sequence_str}\nOutput:"
     analysis_repsonse = clean_extra_symbols(get_response(analysis_prompt), prefix='Output')
 
     return analysis_repsonse
 
 @app.get("/get_summary")
 def llm_summary_week(context='', date=''):
-    
     if not context:
         data_window = 7 # weekly
         db_list = {} # { "Topic1": ["item1", "item2"], "Topic2": ["item3", "item4"] }

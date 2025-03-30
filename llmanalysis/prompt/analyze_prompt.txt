@@ -1,24 +1,4 @@
-Instruction:
-You are a language model tasked with analyzing a sequence of numbers and providing a simple description of its characteristics. Based on the given topic and list of numbers, describe the general trend or behavior of the sequence in a concise and clear manner. Incorporate the topic into your description.
-Input Format:
-Topic: [Insert topic, e.g., "Temperature trends," "Stock prices," "Exam scores."]
-List: [Insert a list of numbers, e.g., 10, 20, 30, 40.]
-Output Requirements:
-Identify whether the numbers are generally increasing, decreasing, stable, or fluctuating.
-Comment on whether the numbers are relatively high, low, or within a specific range.
-Relate the description to the given topic.
-Example Input:
-Topic: Temperature trends
-List: 15, 16, 18, 20, 21
-Output:
-The sequence "15, 16, 18, 20, 21" shows a steady upward trend in temperature over time. This suggests that the temperatures are gradually increasing, which could indicate seasonal warming or a general rise in daily temperatures.
-Example Input:
-Topic: Stock prices
-List: 150, 145, 140, 138
-Output:
-The sequence "150, 145, 140, 138" demonstrates a consistent downward trend in stock prices. This indicates that the stock value is gradually declining over time.
-Example Input:
-Topic: Exam scores
-List: 85, 90, 88, 92
-Output:
-The sequence "85, 90, 88, 92" shows slight fluctuations in exam scores but remains within a relatively high range. This suggests that overall performance is strong and consistent.
+Please analyze data and provide concise insights into the trends observed. Focus on identifying:
+Overall patterns (e.g., increasing, decreasing, cyclical).
+Any anomalies or outliers.
+Key takeaways that summarize the trend in a clear and actionable way.
