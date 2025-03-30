@@ -111,7 +111,7 @@ class InsightsService {
          int energy = entry['energyLevel'] ?? 0;
          String symptoms = (entry['symptoms'] as List?)?.map((s) => "${s['symptom']} (Severity: ${s['severity']})").join(', ') ?? 'None';
          String notes = entry['notes'] ?? 'N/A';
-         formattedJournalEntries += "- Date: $timestamp, Mood: $mood, Energy: $energy/10, Symptoms: $symptoms, Notes: $notes\n";
+         formattedJournalEntries += "- Date: $timestamp, Mood: $mood, Energy: ${energy.toString()}/10, Symptoms: $symptoms, Notes: $notes\n"; // Fixed: Added .toString() to energy
       }
     }
 
