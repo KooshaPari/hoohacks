@@ -1,0 +1,12 @@
+{
+  "mood": 0,
+  "energyLevel": 0,
+  "symptoms": [
+    {
+      "symptom": "",
+      "severity": 0
+    }
+  ],
+  "notes": "",
+  "tags": ""
+}

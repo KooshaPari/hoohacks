@@ -47,9 +47,31 @@
     };
     
     // Initialize Firebase immediately - this helps avoid timing issues
-    if (typeof firebase !== 'undefined') {
+    if (typeof firebase !== 'unp starting...
+flutter: Initializing Firebase...
+flutter: Error initializing Firebase: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+flutter: Error during app initialization: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+flutter: Stack trace: #0      MethodChannelFirebase.initializeApp (package:firebase_core_platform_interface/src/method_channel/method_channel_firebase.dart:136:11)
+flutter: <asynchronous suspension>
+flutter: #1      Firebase.initializeApp (package:firebase_core/src/firebase.dart:66:31)
+flutter: <asynchronous suspension>
+flutter: #2      AuthService.initializeFirebase (package:healthsync/src/services/auth_service.dart:46:9)
+flutter: <asynchronous suspension>
+flutter: #3      main (package:healthsync/main.dart:26:5)
+flutter: <asynchronous suspension>
+flutter:
+ined') {
       try {
-        firebase.initializeApp(firebaseConfig);
+      if (  firebase.apps.length === 0) {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      console.log('Firebase initialized successfully from index.html');
+    } catch (e) {
+      console.error('Error initializing Firebase:', e);
+    }
+  } else {
+    console.warn('Firebase already initialized or not available');
+  }
         console.log('Firebase initialized successfully from index.html');
       } catch (e) {
         console.error('Error initializing Firebase:', e);
@@ -65,8 +87,7 @@
       
       // Try initializing Firebase again if it wasn't available earlier
       if (typeof firebase !== 'undefined' && !firebase.apps?.length) {
-        try {
-          firebase.initializeApp(firebaseConfig);
+        try { 
           console.log('Firebase initialized successfully in DOMContentLoaded event');
         } catch (e) {
           console.error('Error initializing Firebase in DOMContentLoaded event:', e);

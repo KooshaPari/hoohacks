@@ -8,12 +8,13 @@ import 'package:healthsync/src/pages/entry_page.dart';
 import 'package:healthsync/src/services/auth_service.dart';
 // Keep this if HealthService is still used
 import 'package:healthsync/src/utils/consent_manager.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:healthsync/firebase_options.dart';Z
 // Keep this if HealthUtils is still used
 import 'package:healthsync/src/pages/login_page.dart'; // Import LoginPage
 // Import BasicLoginPage (maybe remove later)
 import 'package:healthsync/src/pages/about_page.dart'; // Import AboutPage
-// Keep this if Platform is still used
-
 Future<void> main() async {
   // Ensure bindings are initialized before calling Firebase.initializeApp()
   WidgetsFlutterBinding.ensureInitialized(); 
@@ -22,18 +23,17 @@ Future<void> main() async {
   debugPrint('App starting...');
 
   try {
-    // Initialize Firebase first
-    await AuthService.initializeFirebase(); 
-    debugPrint('Firebase initialized.');
-
-    // Get the appropriate platform instance (optional, if needed before MyApp)
-    // final platform = Platform.getInstance(); 
-    // debugPrint('Is mobile: ${platform.isMobile()}');
-
-    // TODO: Initialize other services like HealthService if needed after Firebase init
-    // await configureHealth(); // Example - ensure this is defined or removed
-    // final healthService = HealthService();
-    // await healthService.initialize(); // Example - ensure this is defined or removed
+    // Check if Firebase is already initialized to prevent duplicate app error
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      debugPrint('Firebase initialized successfully.');
+    } else {
+      debugPrint('Firebase already initialized, using existing app.');
+      // Get the existing app instance
+      Firebase.app();
+    }
 
     // Launch the app
     runApp(const MyApp());
@@ -46,53 +46,6 @@ Future<void> main() async {
     runApp(MaterialApp(home: Scaffold(body: Center(child: Text('Error initializing app: $e')))));
   }
 }
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Use a StreamBuilder to listen to auth state changes
-    return StreamBuilder<AppUser.User?>(
-      stream: AuthService().authStateChanges,
-      builder: (context, snapshot) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'HealthSync',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            useMaterial3: true,
-          ),
-          home: SafeArea(
-            child: Builder(
-              builder: (context) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Show loading indicator while checking auth state
-                  return const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  );
-                } else if (snapshot.hasError) {
-                  // Handle auth stream errors
-                  return Scaffold(
-                    body: Center(child: Text('Auth Error: ${snapshot.error}')),
-                  );
-                } else if (snapshot.hasData && snapshot.data != null) {
-                  // User is logged in, navigate to NavBarController
-                  // Ensure snapshot.data!.email is not null or handle appropriately
-                  return NavBarController(email: snapshot.data!.email ?? 'No Email'); 
-                } else {
-                  // User is not logged in, show LoginPage
-                  return const LoginPage(); 
-                }
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class NavBarController extends StatefulWidget {
   final String email; // Add email parameter
 
