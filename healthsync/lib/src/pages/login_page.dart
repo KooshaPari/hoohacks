@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:healthsync/main.dart'; // Import NavBarController
 import 'package:healthsync/src/pages/create_account_page.dart'; // Import CreateAccountPage
+import 'package:healthsync/src/pages/forgot_password_page.dart'; // Import ForgotPasswordPage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -43,6 +44,13 @@ class _LoginPageState extends State<LoginPage> {
       MaterialPageRoute(builder: (context) => const CreateAccountPage()),
     );
   }
+
+ void _navigateToForgotPassword() {
+   Navigator.push(
+     context,
+     MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+   );
+ }
 
   @override
   void dispose() {
@@ -113,6 +121,10 @@ class _LoginPageState extends State<LoginPage> {
               TextButton(
                 onPressed: _navigateToCreateAccount,
                 child: const Text('Create Account'),
+              ),
+              TextButton( // Add Forgot Password button
+                onPressed: _navigateToForgotPassword,
+                child: const Text('Forgot Password?'),
               ),
             ],
           ),
