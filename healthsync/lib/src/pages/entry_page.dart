@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:healthsync/src/utils/health_utils.dart';
+import 'package:healthsync/src/utils/mongo_service.dart';
+
+final MongoService mongoService = MongoService();
 
 class EntryPage extends StatefulWidget {
   const EntryPage({super.key});
@@ -24,6 +27,12 @@ class _EntryPageState extends State<EntryPage> {
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    mongoService.connect();
+  }
 
   @override
   Widget build(BuildContext context) {

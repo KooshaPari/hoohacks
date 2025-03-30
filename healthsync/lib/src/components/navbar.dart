@@ -29,7 +29,7 @@ class _NavBarState extends State<NavBar> {
             label: "Home",
           ),
           NavigationDestination(
-            icon: Icon(Icons.bar_chart, color: Colors.black),
+            icon: Icon(Icons.bar_chart_outlined, color: Colors.black),
             selectedIcon: Icon(Icons.bar_chart, color: Colors.black),
             label: "Weekly",
           ),

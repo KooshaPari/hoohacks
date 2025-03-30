@@ -7,7 +7,9 @@ import 'package:healthsync/src/pages/weekly_summary.dart';
 import 'package:healthsync/src/pages/settings_page.dart';
 import 'package:healthsync/src/pages/entry_page.dart';
 import 'package:healthsync/src/utils/health_utils.dart';
-import 'package:healthsync/src/pages/login_page.dart'; // Import LoginPage
+import 'package:healthsync/src/pages/login_page.dart';
+import 'package:realm/realm.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
