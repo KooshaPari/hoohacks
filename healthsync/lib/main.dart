@@ -7,6 +7,7 @@ import 'package:healthsync/src/pages/weekly_summary.dart';
 import 'package:healthsync/src/pages/settings_page.dart';
 import 'package:healthsync/src/pages/entry_page.dart';
 import 'package:healthsync/src/utils/health_utils.dart';
+import 'package:healthsync/src/pages/login_page.dart'; // Import LoginPage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const NavBarController(),
+      home: const LoginPage(), // Set LoginPage as the initial route
     );
   }
 }
@@ -98,14 +99,31 @@ class _NavBarControllerState extends State<NavBarController> {
           },
         ),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(
               Icons.settings,
               color: Colors.white,
             ),
-            onPressed: () {
-              // open settings
-            }
+            onSelected: (String result) {
+              switch (result) {
+                case 'logout':
+                  // Navigate back to LoginPage and remove all previous routes
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                    (Route<dynamic> route) => false,
+                  );
+                  break;
+                // Add other settings options here if needed in the future
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: Text('Logout'),
+              ),
+              // Add other PopupMenuItems for more settings options
+            ],
           ),
         ],
       ),
