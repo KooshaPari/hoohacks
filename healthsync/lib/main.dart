@@ -8,6 +8,7 @@ import 'package:healthsync/src/pages/settings_page.dart';
 import 'package:healthsync/src/pages/entry_page.dart';
 import 'package:healthsync/src/utils/health_utils.dart';
 import 'package:healthsync/src/pages/login_page.dart'; // Import LoginPage
+import 'package:healthsync/src/pages/about_page.dart'; // Import AboutPage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +50,9 @@ class MyApp extends StatelessWidget {
 }
 
 class NavBarController extends StatefulWidget {
-  const NavBarController({super.key});
+  final String email; // Add email parameter
+
+  const NavBarController({super.key, required this.email}); // Make email required
 
   @override
   _NavBarControllerState createState() => _NavBarControllerState();
@@ -57,6 +60,7 @@ class NavBarController extends StatefulWidget {
 
 class _NavBarControllerState extends State<NavBarController> {
   int _selectedIndex = 0;
+  // Access email via widget.email
 
   final List<Widget> _pages = [
     const HomePage(title: 'HealthSync'),
@@ -106,23 +110,45 @@ class _NavBarControllerState extends State<NavBarController> {
             ),
             onSelected: (String result) {
               switch (result) {
+                case 'settings':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SettingsPage(email: widget.email), // Pass email
+                    ),
+                  );
+                  break;
+                case 'about':
+                   Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AboutPage(), // Navigate to AboutPage
+                    ),
+                  );
+                  break;
                 case 'logout':
-                  // Navigate back to LoginPage and remove all previous routes
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginPage()),
                     (Route<dynamic> route) => false,
                   );
                   break;
-                // Add other settings options here if needed in the future
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               const PopupMenuItem<String>(
+                value: 'settings',
+                child: Text('Settings'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'about',
+                child: Text('About'),
+              ),
+              const PopupMenuDivider(), // Optional separator
+              const PopupMenuItem<String>(
                 value: 'logout',
                 child: Text('Logout'),
               ),
-              // Add other PopupMenuItems for more settings options
             ],
           ),
         ],

@@ -24,10 +24,10 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _errorMessage = null;
         });
-        // Navigate to the main app page (NavBarController)
+        // Navigate to the main app page (NavBarController) and pass email
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NavBarController()),
+          MaterialPageRoute(builder: (context) => NavBarController(email: email)),
         );
       } else {
         setState(() {

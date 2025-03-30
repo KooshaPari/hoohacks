@@ -7,9 +7,11 @@ class CreateAccountPage extends StatelessWidget {
   void _createAccountAndNavigate(BuildContext context) {
     // In a real app, you would handle account creation logic here.
     // For this dummy page, we just navigate to the main app page.
+    // Pass a dummy email for created accounts
+    const dummyEmail = 'created@account.com';
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const NavBarController()),
+      MaterialPageRoute(builder: (context) => NavBarController(email: dummyEmail)),
       (Route<dynamic> route) => false, // Remove all previous routes
     );
   }

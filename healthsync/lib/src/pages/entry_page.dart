@@ -107,7 +107,7 @@ class _EntryPageState extends State<EntryPage> {
               TextFormField(
                 controller: _symptomsController,
                 decoration: const InputDecoration(
-                  labelText: 'Headache:7, Fatigue:5',
+                  labelText: 'Enter symptoms following this format - Headache:7, Fatigue:5',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
