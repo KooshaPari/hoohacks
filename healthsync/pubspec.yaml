@@ -37,7 +37,7 @@ dependencies:
   fl_chart: ^0.70.2
   # Health data packages
   health: ^12.1.0
-  health_kit_reporter: ^3.0.0  # For advanced HealthKit access
+  health_kit_reporter: ^2.3.1  # For advanced HealthKit access
   # Auth packages
   auth0_flutter: ^1.9.0
   flutter_secure_storage: ^9.0.0  # For storing credentials securely
