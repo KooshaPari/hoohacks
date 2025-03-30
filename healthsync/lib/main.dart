@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginPage(), // Set LoginPage as the initial route
+      home: const NavBarController(email: ''), // Set LoginPage as the initial route
     );
   }
 }

@@ -59,15 +59,15 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Auth0: 2876d0c36857422eda9cb580a6cc896c7d14cb36
-  auth0_flutter: eb1c74a8ddbd0a08533e47838a885b39c11b3951
-  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
+  auth0_flutter: f07bdadbe380d8d257af41bd84096d3f69e2a460
+  device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
-  health: a27e55f6f9682483a8bb8fd280084d025b80b478
-  health_kit_reporter: c415db36059e3adea874264998f4888c45687940
+  flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
+  health: a421b1627a55d3200cc1661cbfbd068439b09938
+  health_kit_reporter: f6e13538b33edf31bd01a98bcedcfbb38ed8cac6
   HealthKitReporter: 4fae728be1afa52c4833d4cfb9835b368bfc89e6
   JWTDecode: 7dae24cb9bf9b608eae61e5081029ec169bb5527
-  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   SimpleKeychain: 768cf43ae778b1c21816e94dddf01bb8ee96a075
 
 PODFILE CHECKSUM: ba0d7af98d1a0db7cbf744edd0331fd4de934cd6
