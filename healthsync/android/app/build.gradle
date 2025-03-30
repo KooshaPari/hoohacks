@@ -46,6 +46,12 @@ android {
         targetSdk  flutter.targetSdkVersion
         versionCode  flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        // Add the following manifest placeholders for Auth0 Flutter SDK
+        manifestPlaceholders = [
+                auth0Domain: "dev-a01zqddvyzlcd8j4.us.auth0.com",
+                auth0Scheme: "com.example.healthsync"
+        ]
     }
 
     buildTypes {
