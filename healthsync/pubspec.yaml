@@ -37,7 +37,11 @@ dependencies:
   cupertino_icons: ^1.0.6
   fl_chart: ^0.70.2
   health: ^12.1.0
+<<<<<<< HEAD
   auth0_flutter: ^1.9.0
+=======
+  http: ^1.2.1 # Added for making HTTP requests
+>>>>>>> refs/remotes/origin/health-integration
 
 dev_dependencies:
   flutter_test:
